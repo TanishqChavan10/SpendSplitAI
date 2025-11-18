@@ -1,6 +1,7 @@
 import React from "react";
 import { ActionSearchBar } from "./ActionSearchBar";
 import { ModeToggle } from "../modetoggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function DashHeader() {
   return (
@@ -9,7 +10,13 @@ function DashHeader() {
         <div className="flex-1 mr-4">
           <ActionSearchBar />
         </div>
-        <ModeToggle />
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+          <Avatar>
+            <AvatarImage src="/avatar.png" alt="User" />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
+        </div>
       </div>
       {/* <div className="flex  items-center gap-4">
                 <ModeToggle />
