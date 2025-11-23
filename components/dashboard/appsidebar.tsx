@@ -1,176 +1,117 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"
+import React from "react";
 import {
-    Calendar,
-    Home,
-    Inbox,
-    Search,
-    Settings,
-    ChevronLeft,
-    ChevronRight,
-    LogOut,
-    Mail,
-} from "lucide-react"
-
+  Sidebar,
+  SidebarBody,
+  SidebarLink,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarProvider,
-} from "@/components/ui/sidebar"
+  IconUsers,
+  IconInbox,
+  IconFileInvoice,
+  IconInfoCircle,
+  IconSettings,
+} from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
+import Image from "next/image";
 
-type MenuItem = {
-    title: string
-    url: string
-    icon: React.ElementType
+interface AppSidebarProps {
+  userEmail?: string;
 }
 
-const DEFAULT_ITEMS: MenuItem[] = [
-    { title: "Dashboard", url: "/dashboard", icon: Home },
-    { title: "Inbox", url: "#", icon: Inbox },
-    { title: "Invoice", url: "/invoice", icon: Calendar },
-    { title: "About", url: "/aboutus", icon: Search },
-    { title: "Settings", url: "/settings", icon: Settings },
-]
-
-export type AppSidebarProps = {
-    items?: MenuItem[]
-    userEmail?: string
-    onLogout?: () => void
-    storageKey?: string
-    initialCollapsed?: boolean
-}
-
-/**
- * AppSidebar
- * - collapsible (persisted in localStorage)
- * - keyboard accessible toggle
- * - shows user email and logout button in footer
- */
 export function AppSidebar({
-    items = DEFAULT_ITEMS,
-    userEmail = "",
-    onLogout = () => console.warn("onLogout not provided"),
-    storageKey = "app-sidebar-collapsed",
-    initialCollapsed = false,
+  userEmail = "user@example.com",
 }: AppSidebarProps) {
-    const [collapsed, setCollapsed] = useState<boolean>(initialCollapsed)
+  const links = [
+    {
+      label: "Groups",
+      href: "/dashboard",
+      icon: (
+        <IconUsers className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+    {
+      label: "Inbox",
+      href: "/dashboard/inbox",
+      icon: (
+        <IconInbox className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+    {
+      label: "Invoice",
+      href: "/dashboard/invoice",
+      icon: (
+        <IconFileInvoice className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+    {
+      label: "About",
+      href: "/dashboard/about",
+      icon: (
+        <IconInfoCircle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+    {
+      label: "Settings",
+      href: "/dashboard/settings",
+      icon: (
+        <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 shrink-0" />
+      ),
+    },
+  ];
 
-    useEffect(() => {
-        try {
-            const raw = localStorage.getItem(storageKey)
-            if (raw !== null) setCollapsed(raw === "true")
-        } catch {
-            // ignore storage errors (e.g., SSR)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+  const [open, setOpen] = React.useState(false);
 
-    useEffect(() => {
-        try {
-            localStorage.setItem(storageKey, String(collapsed))
-        } catch {
-            // ignore
-        }
-    }, [collapsed, storageKey])
+  return (
+    <Sidebar open={open} setOpen={setOpen}>
+      <SidebarBody className="justify-between gap-10">
+        <div className="flex flex-col shrink-0 overflow-y-auto overflow-x-hidden">
+          {/* Logo */}
+          <Logo />
 
-    const toggle = () => setCollapsed((s) => !s)
-
-    const widthClass = collapsed ? "w-16" : "w-64"
-    const labelOpacity = collapsed ? "opacity-0 pointer-events-none w-0" : "opacity-100"
-
-    return (
-        <SidebarProvider>
-            <Sidebar
-                side="left"
-                className={`h-screen transition-all duration-200 ease-in-out border-r bg-white ${widthClass} shrink-0`}
-                role="navigation"
-                aria-label="Main"
-            >
-                <SidebarHeader className="flex items-center justify-between px-3 py-2">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold select-none">{!collapsed ? "Logo " : "logo "}</span>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={toggle}
-                        aria-pressed={collapsed}
-                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        className="inline-flex items-center justify-center p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        title={collapsed ? "Expand" : "Collapse"}
-                    >
-                        <span className="sr-only">{collapsed ? "Expand sidebar" : "Collapse sidebar"}</span>
-                        <ChevronLeft
-                            className={`transition-transform duration-200 ${collapsed ? "rotate-180" : "rotate-0"}`}
-                            size={18}
-                        />
-                    </button>
-                </SidebarHeader>
-
-                <SidebarContent className="px-2">
-                    <SidebarGroup>
-                        <SidebarGroupContent>
-                            <SidebarMenu className="space-y-1">
-                                {items.map((item) => {
-                                    const Icon = item.icon
-                                    return (
-                                        <SidebarMenuItem key={item.title}>
-                                            <SidebarMenuButton asChild>
-                                                <a
-                                                    href={item.url}
-                                                    title={collapsed ? item.title : undefined}
-                                                    className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                >
-                                                    <Icon size={18} aria-hidden />
-                                                    <span
-                                                        className={`text-sm transition-opacity duration-150 ${labelOpacity}`}
-                                                        aria-hidden={collapsed}
-                                                    >
-                                                        {item.title}
-                                                    </span>
-                                                </a>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    )
-                                })}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
-                </SidebarContent>
-
-                <SidebarFooter className="mt-auto px-2 py-3">
-                    <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                            <Mail size={16} />
-                            <span
-                                className={`text-sm truncate max-w-[10rem] transition-all duration-150 ${labelOpacity}`}
-                                title={userEmail}
-                                aria-hidden={collapsed}
-                            >
-                                {userEmail || "not signed in"}
-                            </span>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                            <button
-                                onClick={onLogout}
-                                title="Logout"
-                                className="inline-flex items-center justify-center p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <LogOut size={16} />
-                            </button>
-                        </div>
-                    </div>
-                </SidebarFooter>
-            </Sidebar>
-        </SidebarProvider>
-    )
+          {/* Navigation Menu */}
+          <div className="mt-8 flex flex-col gap-5">
+            {links.map((link, idx) => (
+              <SidebarLink key={idx} link={link} />
+            ))}
+          </div>
+        </div>
+      </SidebarBody>
+    </Sidebar>
+  );
 }
+
+export const Logo = () => {
+  const { open } = useSidebar();
+
+  return (
+    <a
+      href="/"
+      className="font-bold text-xl text-neutral-800 dark:text-white py-1 relative z-20 flex items-center gap-2"
+    >
+      <div className="h-10 w-10 relative rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600">
+        <Image
+          src="/logo.png"
+          alt="SplitSphere Logo"
+          fill
+          className="object-contain scale-110 dark:brightness-75"
+          priority
+        />
+      </div>
+      <motion.span
+        initial={{ opacity: 0, width: 0 }}
+        animate={{
+          opacity: open ? 1 : 0,
+          width: open ? "auto" : 0,
+        }}
+        transition={{ duration: 0.2 }}
+        className="font-bold text-lg whitespace-nowrap overflow-hidden"
+      >
+        SplitSphere
+      </motion.span>
+    </a>
+  );
+};
