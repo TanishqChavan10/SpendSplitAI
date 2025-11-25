@@ -1,18 +1,15 @@
 "use client";
 
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, { useId } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   IconUsers,
   IconCheck,
   IconClock,
   IconCurrencyDollar,
-  IconEdit,
 } from "@tabler/icons-react";
-import { motion, AnimatePresence } from "motion/react";
-import { useOutsideClick } from "@/hooks/use-outside-click";
-import { useEditGroupName } from "@/hooks/use-edit-group-name";
-import { GroupExpandedView } from "./GroupExpandedView";
+import { motion } from "motion/react";
+import Link from "next/link";
 
 interface GroupCardProps {
   id: string;
@@ -23,7 +20,6 @@ interface GroupCardProps {
   netAmount: number;
   memberCount: number;
   lastActivity: string;
-  onNameChange: (newName: string) => void;
 }
 
 export function GroupCard({
@@ -35,101 +31,19 @@ export function GroupCard({
   netAmount,
   memberCount,
   lastActivity,
-  onNameChange,
 }: GroupCardProps) {
-  const [active, setActive] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<"transactions" | "members">(
-    "transactions"
-  );
   const id_unique = useId();
 
-  const { isEditing, editedName, setEditedName, startEditing, save, cancel } =
-    useEditGroupName(name, onNameChange);
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setActive(false);
-      }
-    }
-
-    if (active) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [active]);
-
-  useOutsideClick(ref, () => setActive(false));
-
   return (
-    <>
-      <AnimatePresence>
-        {active && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm h-full w-full z-10"
-          />
-        )}
-      </AnimatePresence>
-      <GroupExpandedView
-        id={id}
-        name={name}
-        memberCount={memberCount}
-        lastActivity={lastActivity}
-        active={active}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onClose={() => setActive(false)}
-      />
-      <motion.div
-        layoutId={`card-${name}-${id_unique}`}
-        onClick={() => setActive(true)}
-        className="w-full"
-      >
+    <Link href={`/dashboard/group/${id}`} className="block w-full">
+      <motion.div layoutId={`card-${name}-${id_unique}`} className="w-full">
         <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer border-l-4 border-l-primary">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold text-card-foreground flex items-center gap-2 flex-1">
                 <IconUsers className="w-5 h-5 text-primary" />
-                {isEditing ? (
-                  <input
-                    value={editedName}
-                    onChange={(e) => setEditedName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") save();
-                      if (e.key === "Escape") cancel();
-                    }}
-                    className="bg-transparent border-none outline-none text-lg font-semibold text-card-foreground flex-1"
-                    autoFocus
-                  />
-                ) : (
-                  <span>{name}</span>
-                )}
+                <span>{name}</span>
               </CardTitle>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (isEditing) {
-                    save();
-                  } else {
-                    startEditing();
-                  }
-                }}
-                className="ml-2 p-1 rounded hover:bg-muted"
-              >
-                {isEditing ? (
-                  <IconCheck className="w-4 h-4 text-primary" />
-                ) : (
-                  <IconEdit className="w-4 h-4 text-muted-foreground hover:text-primary" />
-                )}
-              </button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -176,6 +90,6 @@ export function GroupCard({
           </CardContent>
         </Card>
       </motion.div>
-    </>
+    </Link>
   );
 }
