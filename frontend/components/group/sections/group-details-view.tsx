@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/prompt-input";
 import { formatIndianRupee } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PerUserData } from "../per-user-data";
 
 interface GroupDetailsViewProps {
   id: string;
@@ -97,6 +98,8 @@ export function GroupDetailsView({
       setIsLoading(false);
     }
   };
+  
+  const [selectedUser, setSelectedUser] = React.useState<string | null>(null);
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
@@ -125,8 +128,9 @@ export function GroupDetailsView({
             ) : (
               members.map((member) => (
                 <div
-                  key={member.name}
-                  className="flex items-center justify-between"
+                  key={member.name} // displays user_name
+                  className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded-lg transition-colors"
+                  onClick={() => setSelectedUser(member.name)}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -142,9 +146,8 @@ export function GroupDetailsView({
                     </div>
                   </div>
                   <span
-                    className={`text-lg font-bold ${
-                      member.balance >= 0 ? "text-chart-2" : "text-destructive"
-                    }`}
+                    className={`text-lg font-bold ${member.balance >= 0 ? "text-chart-2" : "text-destructive"
+                      }`}
                   >
                     {member.balance >= 0 ? "+" : ""}
                     {formatIndianRupee(Math.abs(member.balance))}
@@ -266,6 +269,14 @@ export function GroupDetailsView({
           </Button>
         </div>
       </div>
+      {selectedUser && (
+        <PerUserData
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+          userName={selectedUser}
+          expenses={expenses}
+        />
+      )}
     </div>
   );
 }
