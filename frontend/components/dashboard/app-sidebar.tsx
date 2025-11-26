@@ -13,18 +13,17 @@ import {
   IconFileInvoice,
   IconInfoCircle,
   IconSettings,
+  IconLogout,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import Image from "next/image";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface AppSidebarProps {
-  userEmail?: string;
-}
-
-export function AppSidebar({
-  userEmail = "user@example.com",
-}: AppSidebarProps) {
+export function AppSidebar() {
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const links = [
     {
       label: "Groups",
@@ -77,6 +76,44 @@ export function AppSidebar({
             {links.map((link, idx) => (
               <SidebarLink key={idx} link={link} />
             ))}
+          </div>
+        </div>
+
+        {/* User Profile Section */}
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => {
+              if (confirm("Are you sure you want to sign out?")) {
+                signOut({ redirectUrl: "/" });
+              }
+            }}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 rounded-md transition-colors"
+          >
+            <IconLogout className="h-5 w-5 shrink-0" />
+            <span className={cn("whitespace-nowrap", !open && "hidden")}>
+              Sign Out
+            </span>
+          </button>
+
+          <div className="flex items-center gap-2 px-3 py-2 border-t border-neutral-200 dark:border-neutral-800 pt-4">
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={user?.imageUrl}
+                alt={user?.fullName || "User"}
+              />
+              <AvatarFallback>
+                {user?.firstName?.[0]}
+                {user?.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className={cn("flex flex-col", !open && "hidden")}>
+              <span className="text-sm font-medium text-neutral-800 dark:text-white">
+                {user?.fullName || "User"}
+              </span>
+              <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate max-w-[150px]">
+                {user?.primaryEmailAddress?.emailAddress}
+              </span>
+            </div>
           </div>
         </div>
       </SidebarBody>

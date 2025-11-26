@@ -5,8 +5,12 @@ import { useRouter, useParams } from "next/navigation";
 import { GroupExpandedView } from "@/components/group/group-expanded-view";
 import { fetchGroup, Group } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 export default function InterceptedGroupPage() {
+  const { getToken, isLoaded: authLoaded } = useAuth();
+  const { isLoaded: userLoaded } = useUser();
   const router = useRouter();
   const params = useParams();
   const id = parseInt(params.id as string, 10);
@@ -19,13 +23,14 @@ export default function InterceptedGroupPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !authLoaded || !userLoaded) return;
 
     (async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchGroup(id);
+        const token = await getToken();
+        const data = await fetchGroup(id, token);
         setGroup(data);
       } catch (err) {
         console.error(err);
@@ -34,12 +39,56 @@ export default function InterceptedGroupPage() {
         setLoading(false);
       }
     })();
-  }, [id]);
+  }, [id, getToken, authLoaded, userLoaded]);
 
-  if (loading) return null; // Don't show anything during loading
+  // Show loading skeleton while auth or data is loading
+  if (!authLoaded || !userLoaded || loading) {
+    return (
+      <Dialog open={true} onOpenChange={() => router.back()}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+          <div className="p-6 space-y-4">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-32" />
+            <div className="space-y-2">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
+  if (error) {
+    return (
+      <Dialog open={true} onOpenChange={() => router.back()}>
+        <DialogContent className="max-w-md">
+          <div className="text-center p-6">
+            <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">
+              Error
+            </h2>
+            <p className="text-muted-foreground">{error}</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
-  if (!group) return <div>Group not found</div>;
+  if (!group) {
+    return (
+      <Dialog open={true} onOpenChange={() => router.back()}>
+        <DialogContent className="max-w-md">
+          <div className="text-center p-6">
+            <h2 className="text-xl font-bold mb-2">Group Not Found</h2>
+            <p className="text-muted-foreground">
+              The requested group could not be found.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <GroupExpandedView

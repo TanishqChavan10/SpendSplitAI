@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { IconSparkles, IconUsers, IconChartBar } from "@tabler/icons-react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import Image from "next/image";
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -61,9 +62,11 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <button className="px-8 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg font-medium hover:scale-105 transition-transform duration-200 shadow-lg">
-              Get Started
-            </button>
+            <Link href="/sign-up">
+              <button className="px-8 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-lg font-medium hover:scale-105 transition-transform duration-200 shadow-lg">
+                Get Started
+              </button>
+            </Link>
             <button className="px-8 py-3 border-2 border-neutral-900 dark:border-white text-neutral-900 dark:text-white rounded-lg font-medium hover:scale-105 transition-transform duration-200">
               Know More
             </button>

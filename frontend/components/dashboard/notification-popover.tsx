@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { fetchGroups, fetchGroupAnalysis } from "@/lib/api";
 import { formatLastActivity } from "@/lib/utils/date";
+import { useAuth } from "@clerk/nextjs";
 
 interface Alert {
   id: string;
@@ -25,6 +26,7 @@ interface Alert {
 }
 
 function NotificationPopover() {
+  const { getToken } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,8 @@ function NotificationPopover() {
   const fetchAlerts = async () => {
     try {
       setLoading(true);
-      const groups = await fetchGroups();
+      const token = await getToken();
+      const groups = await fetchGroups(token);
 
       if (!groups || groups.length === 0) {
         setAlerts([]);
@@ -42,7 +45,7 @@ function NotificationPopover() {
 
       const alertsPromises = groups.map(async (group) => {
         try {
-          const analysis = await fetchGroupAnalysis(group.id);
+          const analysis = await fetchGroupAnalysis(group.id, token);
 
           // Extract alerts from analysis response
           const groupAlerts: Alert[] = [];
