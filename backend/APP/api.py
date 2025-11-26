@@ -74,39 +74,53 @@ class GroupUpdateSchema(Schema):
 
 @api.get("/groups", response=List[GroupSchema])
 def list_groups(request):
-    return Group.objects.all()
+    # Return groups where the authenticated user is a member
+    user = request.user
+    return user.groups.all()
 
 @api.get("/groups/{group_id}", response=GroupSchema)
 def get_group(request, group_id: int):
-    return get_object_or_404(Group, id=group_id)
+    # Ensure user has access to this group
+    user = request.user
+    return get_object_or_404(Group, id=group_id, members=user)
 
 @api.post("/groups", response=GroupSchema)
 def create_group(request, payload: GroupCreateSchema):
+    user = request.user
     group = Group.objects.create(**payload.dict())
+    # Automatically add the creator as a member
+    GroupMember.objects.create(group=group, user=user)
     return group
 
 @api.put("/groups/{group_id}", response=GroupSchema)
 def update_group(request, group_id: int, payload: GroupUpdateSchema):
-    group = get_object_or_404(Group, id=group_id)
+    user = request.user
+    group = get_object_or_404(Group, id=group_id, members=user)
     for attr, value in payload.dict(exclude_unset=True).items():
         setattr(group, attr, value)
-    group.save()
     group.save()
     return group
 
 @api.get("/groups/{group_id}/expenses", response=List[ExpenseSchema])
 def list_group_expenses(request, group_id: int):
-    return Expense.objects.filter(group=group_id).order_by('-created_at')
+    user = request.user
+    # Verify user is a member of this group
+    group = get_object_or_404(Group, id=group_id, members=user)
+    return Expense.objects.filter(group=group).order_by('-created_at')
 
 class AIExpenseCreateSchema(Schema):
     text_input: str
-    user_name: str = "John Doe"
 
 from .services import parse_expense_with_ai, create_expense_from_parsed_data
 
 @api.post("/groups/{group_id}/expenses/ai", response=ExpenseSchema)
 def create_expense_ai(request, group_id: int, payload: AIExpenseCreateSchema):
-    parsed = parse_expense_with_ai(payload.text_input, group_id, payload.user_name)
+    user = request.user
+    # Verify user is a member of this group
+    group = get_object_or_404(Group, id=group_id, members=user)
+    
+    # Use authenticated user's name
+    parsed = parse_expense_with_ai(payload.text_input, group_id, user.name)
     if not parsed:
          return api.create_response(request, {"error": "Failed to parse"}, status=400)
     
@@ -120,11 +134,14 @@ from .services import get_unified_fairness_analysis
 
 @api.get("/groups/{group_id}/analysis")
 def get_group_analysis(request, group_id: int):
+    user = request.user
+    # Verify user is a member of this group
+    group = get_object_or_404(Group, id=group_id, members=user)
+    
     analysis = get_unified_fairness_analysis(group_id)
     
     # Enrich with member details for frontend (tx count, etc)
     # This logic is here to avoid modifying the core fairness service function
-    group = get_object_or_404(Group, id=group_id)
     members = group.members.all()
     now = datetime.now()
     

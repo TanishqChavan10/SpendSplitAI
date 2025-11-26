@@ -11,7 +11,7 @@ class ClerkAuthenticationMiddleware:
 
     def __call__(self, request):
         # Skip auth for these paths
-        public_paths = ['/admin/', '/api/public/']
+        public_paths = ['/admin/']
         if any(request.path.startswith(path) for path in public_paths):
             return self.get_response(request)
 
