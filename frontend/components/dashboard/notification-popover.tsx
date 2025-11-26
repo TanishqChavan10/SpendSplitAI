@@ -44,122 +44,23 @@ function NotificationPopover() {
         try {
           const analysis = await fetchGroupAnalysis(group.id);
 
-          // Extract alerts/messages from analysis response
+          // Extract alerts from analysis response
           const groupAlerts: Alert[] = [];
 
-          // Handle different possible alert formats from backend
-
-          // 1. Check for alerts array
+          // Only handle alerts array
           if (analysis.alerts && Array.isArray(analysis.alerts)) {
             analysis.alerts.forEach((alert: any, index: number) => {
-              if (alert && (alert.message || typeof alert === "string")) {
+              if (alert && alert.message) {
                 groupAlerts.push({
                   id: `${group.id}-alert-${index}`,
-                  message:
-                    typeof alert === "string"
-                      ? alert
-                      : alert.message || "Alert",
+                  message: alert.message,
                   groupId: group.id,
                   groupName: group.name,
-                  type: alert.type || alert.priority || "info",
+                  type: alert.type || "info",
                   timestamp: alert.timestamp || new Date().toISOString(),
                   read: false,
                 });
               }
-            });
-          }
-
-          // 2. Check for single message field
-          if (analysis.message && typeof analysis.message === "string") {
-            groupAlerts.push({
-              id: `${group.id}-message`,
-              message: analysis.message,
-              groupId: group.id,
-              groupName: group.name,
-              type: analysis.alertType || analysis.type || "info",
-              timestamp: analysis.timestamp || new Date().toISOString(),
-              read: false,
-            });
-          }
-
-          // 3. Check for notifications array
-          if (analysis.notifications && Array.isArray(analysis.notifications)) {
-            analysis.notifications.forEach(
-              (notification: any, index: number) => {
-                if (
-                  notification &&
-                  (notification.message || notification.text)
-                ) {
-                  groupAlerts.push({
-                    id: `${group.id}-notification-${index}`,
-                    message:
-                      notification.message ||
-                      notification.text ||
-                      "Notification",
-                    groupId: group.id,
-                    groupName: group.name,
-                    type: notification.type || notification.level || "info",
-                    timestamp:
-                      notification.timestamp ||
-                      notification.createdAt ||
-                      new Date().toISOString(),
-                    read: false,
-                  });
-                }
-              }
-            );
-          }
-
-          // 4. Check for warnings array
-          if (analysis.warnings && Array.isArray(analysis.warnings)) {
-            analysis.warnings.forEach((warning: any, index: number) => {
-              if (warning && (warning.message || typeof warning === "string")) {
-                groupAlerts.push({
-                  id: `${group.id}-warning-${index}`,
-                  message:
-                    typeof warning === "string"
-                      ? warning
-                      : warning.message || "Warning",
-                  groupId: group.id,
-                  groupName: group.name,
-                  type: "warning",
-                  timestamp: warning.timestamp || new Date().toISOString(),
-                  read: false,
-                });
-              }
-            });
-          }
-
-          // 5. Check for errors array
-          if (analysis.errors && Array.isArray(analysis.errors)) {
-            analysis.errors.forEach((error: any, index: number) => {
-              if (error && (error.message || typeof error === "string")) {
-                groupAlerts.push({
-                  id: `${group.id}-error-${index}`,
-                  message:
-                    typeof error === "string"
-                      ? error
-                      : error.message || "Error",
-                  groupId: group.id,
-                  groupName: group.name,
-                  type: "error",
-                  timestamp: error.timestamp || new Date().toISOString(),
-                  read: false,
-                });
-              }
-            });
-          }
-
-          // 6. Check for status messages
-          if (analysis.status && typeof analysis.status === "string") {
-            groupAlerts.push({
-              id: `${group.id}-status`,
-              message: analysis.status,
-              groupId: group.id,
-              groupName: group.name,
-              type: "info",
-              timestamp: new Date().toISOString(),
-              read: false,
             });
           }
 
@@ -206,11 +107,6 @@ function NotificationPopover() {
 
   useEffect(() => {
     fetchAlerts();
-
-    // Set up periodic refresh every 30 seconds
-    const interval = setInterval(fetchAlerts, 30000);
-
-    return () => clearInterval(interval);
   }, []);
 
   // Refresh alerts when popover opens
