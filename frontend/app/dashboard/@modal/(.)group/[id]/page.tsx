@@ -16,22 +16,30 @@ export default function InterceptedGroupPage() {
   );
   const [group, setGroup] = useState<Group | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
 
     (async () => {
       try {
+        setLoading(true);
+        setError(null);
         const data = await fetchGroup(id);
         setGroup(data);
       } catch (err) {
         console.error(err);
         setError("Failed to load group");
+      } finally {
+        setLoading(false);
       }
     })();
   }, [id]);
 
-  if (error || !group) return <div>{error ?? "Group not found"}</div>;
+  if (loading) return null; // Don't show anything during loading
+
+
+  if (!group) return <div>Group not found</div>;
 
   return (
     <GroupExpandedView
