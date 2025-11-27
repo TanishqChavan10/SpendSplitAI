@@ -30,16 +30,20 @@ import {
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 
-export function EmptyGroupsState() {
+interface EmptyGroupsStateProps {
+  onCreate: (name: string, description: string) => Promise<void>;
+}
+
+export function EmptyGroupsState({ onCreate }: EmptyGroupsStateProps) {
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [joinViaLinkOpen, setJoinViaLinkOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [inviteLink, setInviteLink] = useState("");
 
-  const handleCreateGroup = (e: React.FormEvent) => {
+  const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating group:", { groupName, groupDescription });
+    await onCreate(groupName, groupDescription);
     setCreateGroupOpen(false);
     setGroupName("");
     setGroupDescription("");

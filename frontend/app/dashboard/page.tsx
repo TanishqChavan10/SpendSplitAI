@@ -45,37 +45,37 @@ export default function DashBoard() {
   const [newGroupType, setNewGroupType] = useState("SHORT");
   const [newGroupMemberLimit, setNewGroupMemberLimit] = useState("");
 
- useEffect(() => {
-  if (!authLoaded || !userLoaded) return;
+  useEffect(() => {
+    if (!authLoaded || !userLoaded) return;
 
-  (async () => {
-    try {
-      setLoading(true);
+    (async () => {
+      try {
+        setLoading(true);
 
-      const token = await getToken();
-      const { data, error, status } = await fetchGroups(token);
+        const token = await getToken();
+        const { data, error, status } = await fetchGroups(token);
 
-      if (status === 401) {
-        setError("Unauthorized");
-        setGroups([]);
-        return;
+        if (status === 401) {
+          setError("Unauthorized");
+          setGroups([]);
+          return;
+        }
+
+        if (error) {
+          setError(error);
+          setGroups([]);
+          return;
+        }
+
+        setGroups(data || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load groups");
+      } finally {
+        setLoading(false);
       }
-
-      if (error) {
-        setError(error);
-        setGroups([]);
-        return;
-      }
-
-      setGroups(data || []);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load groups");
-    } finally {
-      setLoading(false);
-    }
-  })();
-}, [getToken, authLoaded, userLoaded]);
+    })();
+  }, [getToken, authLoaded, userLoaded]);
 
 
   // Show loading state while Clerk is initializing
@@ -128,13 +128,18 @@ export default function DashBoard() {
 
     try {
       const token = await getToken();
-      const newGroup = await createGroup(
+      const { data: newGroup, error } = await createGroup(
         {
           name: newGroupName,
           type: newGroupType,
         },
         token
       );
+
+      if (error || !newGroup) {
+        throw new Error(error || "Failed to create group");
+      }
+
       setGroups((prevGroups) => [...prevGroups, newGroup]);
 
       // Reset form and close dialog
@@ -152,6 +157,34 @@ export default function DashBoard() {
       alert(errorMessage);
     }
   };
+  const handleCreateGroupFromEmptyState = async (
+    name: string,
+    description: string
+  ) => {
+    try {
+      const token = await getToken();
+      const { data: newGroup, error } = await createGroup(
+        {
+          name,
+          type: "SHORT",
+        },
+        token
+      );
+
+      if (error || !newGroup) {
+        throw new Error(error || "Failed to create group");
+      }
+
+      setGroups((prevGroups) => [...prevGroups, newGroup]);
+      alert(`Group "${newGroup.name}" created successfully!`);
+    } catch (error) {
+      console.error("Failed to create group:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create group";
+      alert(errorMessage);
+    }
+  };
+
   // Filter groups based on a search query
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -163,7 +196,7 @@ export default function DashBoard() {
       <main className="flex-1 overflow-auto p-6">
         {groups.length === 0 && !loading ? (
           <div className="flex items-center justify-center h-full">
-            <EmptyGroupsState />
+            <EmptyGroupsState onCreate={handleCreateGroupFromEmptyState} />
           </div>
         ) : (
           /* Groups list */
@@ -176,9 +209,8 @@ export default function DashBoard() {
               <p className="text-neutral-600 dark:text-neutral-400">
                 {groups.length === 0
                   ? "Get started by creating your first group"
-                  : `You have ${groups.length} ${
-                      groups.length === 1 ? "group" : "groups"
-                    }`}
+                  : `You have ${groups.length} ${groups.length === 1 ? "group" : "groups"
+                  }`}
               </p>
             </div>
 
@@ -290,15 +322,15 @@ export default function DashBoard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {loading
                 ? Array.from({ length: 6 }).map((_, index) => (
-                    <CardSkeleton key={`skeleton-${index}`} />
-                  ))
+                  <CardSkeleton key={`skeleton-${index}`} />
+                ))
                 : filteredGroups.map((group) => (
-                    <GroupCard
-                      key={group.id}
-                      {...group}
-                      id={group.id.toString()}
-                    />
-                  ))}
+                  <GroupCard
+                    key={group.id}
+                    {...group}
+                    id={group.id.toString()}
+                  />
+                ))}
             </div>
           </div>
         )}

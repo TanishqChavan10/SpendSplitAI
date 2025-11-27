@@ -23,6 +23,7 @@ class GroupSchema(Schema):
     id: int
     name: str
     type: str
+    owner_id: Optional[int] = None
     totalTransactions: int = 0
     approvedTransactions: int = 0
     pendingTransactions: int = 0
@@ -87,7 +88,7 @@ def get_group(request, group_id: int):
 @api.post("/groups", response=GroupSchema)
 def create_group(request, payload: GroupCreateSchema):
     user = request.user
-    group = Group.objects.create(**payload.dict())
+    group = Group.objects.create(owner=user, **payload.dict())
     # Automatically add the creator as a member
     GroupMember.objects.create(group=group, user=user)
     return group

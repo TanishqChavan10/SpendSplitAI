@@ -36,7 +36,7 @@ function NotificationPopover() {
     try {
       setLoading(true);
       const token = await getToken();
-      const groups = await fetchGroups(token);
+      const { data: groups } = await fetchGroups(token);
 
       if (!groups || groups.length === 0) {
         setAlerts([]);
@@ -45,13 +45,13 @@ function NotificationPopover() {
 
       const alertsPromises = groups.map(async (group) => {
         try {
-          const analysis = await fetchGroupAnalysis(group.id, token);
+          const { data: analysis } = await fetchGroupAnalysis(group.id, token);
 
           // Extract alerts from analysis response
           const groupAlerts: Alert[] = [];
 
           // Only handle alerts array
-          if (analysis.alerts && Array.isArray(analysis.alerts)) {
+          if (analysis?.alerts && Array.isArray(analysis.alerts)) {
             analysis.alerts.forEach((alert: any, index: number) => {
               if (alert && alert.message) {
                 groupAlerts.push({
@@ -205,9 +205,8 @@ function NotificationPopover() {
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`p-4 hover:bg-muted/50 transition-colors ${
-                    !alert.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
-                  }`}
+                  className={`p-4 hover:bg-muted/50 transition-colors ${!alert.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">

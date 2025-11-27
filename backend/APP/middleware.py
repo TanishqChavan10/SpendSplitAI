@@ -25,16 +25,28 @@ class ClerkAuthenticationMiddleware:
 
         # STEP 1 — Verify Clerk session token
         try:
-            session = self.clerk.sessions.verify(token)
-            clerk_user_id = session["sub"]
+            from clerk_backend_api import AuthenticateRequestOptions
+            options = AuthenticateRequestOptions(secret_key=settings.CLERK_SECRET_KEY)
+            request_state = self.clerk.authenticate_request(request, options)
+            
+            if not request_state.is_signed_in:
+                 return JsonResponse({"error": "Invalid or expired token"}, status=401)
+                 
+            clerk_user_id = request_state.payload['sub']
         except Exception as e:
-            return JsonResponse({"error": f"Invalid or expired token: {str(e)}"}, status=401)
+            return JsonResponse({"error": f"Authentication failed: {str(e)}"}, status=401)
 
         # STEP 2 — Fetch Clerk user safely
         try:
-            clerk_user = self.clerk.users.get(clerk_user_id)
-        except Exception:
+            clerk_user = self.clerk.users.get(user_id=clerk_user_id)
+        except Exception as e:
+            print(f"Error fetching Clerk user: {e}")
+            import traceback
+            traceback.print_exc()
             return JsonResponse({"error": "Unable to fetch Clerk user"}, status=500)
+
+        if clerk_user is None:
+            return JsonResponse({"error": "User not found in Clerk"}, status=404)
 
         # STEP 3 — Extract Clerk name safely
         first_name = clerk_user.first_name or ""
@@ -42,11 +54,9 @@ class ClerkAuthenticationMiddleware:
         full_name = f"{first_name} {last_name}".strip() or "User"
 
         # STEP 4 — Extract Clerk email safely
-        email = (
-            clerk_user.email_addresses[0].email_address
-            if clerk_user.email_addresses
-            else None
-        )
+        email = None
+        if clerk_user.email_addresses and len(clerk_user.email_addresses) > 0:
+            email = clerk_user.email_addresses[0].email_address
 
         # STEP 5 — Sync user into your database
         user, created = User.objects.get_or_create(

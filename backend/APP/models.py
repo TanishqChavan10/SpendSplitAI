@@ -42,6 +42,8 @@ class Group(models.Model):
         help_text="The minimum debt before AI starts complaining"
     )
 
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_groups', null=True, blank=True)
+
     members = models.ManyToManyField(User, through='GroupMember', related_name='groups')
 
     def __str__(self):

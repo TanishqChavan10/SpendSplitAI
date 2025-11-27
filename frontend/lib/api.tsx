@@ -8,6 +8,7 @@ export interface Group {
   netAmount: number;
   memberCount: number;
   lastActivity: string;
+  owner_id?: number;
 }
 
 export interface GroupCreate {
