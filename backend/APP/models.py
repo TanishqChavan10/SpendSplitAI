@@ -73,26 +73,40 @@ class GroupMember(models.Model):
 
 
 class Expense(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+
     id = models.AutoField(primary_key=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='expenses')
     payer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expenses_paid')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.CharField(max_length=255)
     category = models.CharField(max_length=50)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.description} - {self.amount}"
+        return f"{self.description} - {self.amount} ({self.status})"
 
 
 class ExpenseSplit(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('ACCEPTED', 'Accepted'),
+        ('REJECTED', 'Rejected'),
+    ]
+
     id = models.AutoField(primary_key=True)
     expense = models.ForeignKey(Expense, on_delete=models.CASCADE, related_name='splits')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owed_splits')
     owed_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
 
     def __str__(self):
-        return f"{self.user} owes {self.owed_amount}"
+        return f"{self.user} owes {self.owed_amount} ({self.status})"
 
 
 class GroupLog(models.Model):

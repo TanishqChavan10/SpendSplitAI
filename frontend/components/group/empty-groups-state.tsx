@@ -44,7 +44,7 @@ export function EmptyGroupsState({ onCreate }: EmptyGroupsStateProps) {
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [joinViaLinkOpen, setJoinViaLinkOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
-  const [duration, setDuration] = useState("short-term");
+  const [duration, setDuration] = useState("SHORT");
   const [inviteLink, setInviteLink] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +53,7 @@ export function EmptyGroupsState({ onCreate }: EmptyGroupsStateProps) {
     await onCreate(groupName, duration);
     setCreateGroupOpen(false);
     setGroupName("");
-    setDuration("short-term");
+    setDuration("SHORT");
   };
 
   const handleJoinViaLink = (e: React.FormEvent) => {
@@ -147,8 +147,8 @@ export function EmptyGroupsState({ onCreate }: EmptyGroupsStateProps) {
                         <SelectValue placeholder="Select duration" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="short-term">Short Term</SelectItem>
-                        <SelectItem value="long-term">Long Term</SelectItem>
+                        <SelectItem value="SHORT">Short Term</SelectItem>
+                        <SelectItem value="LONG">Long Term</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

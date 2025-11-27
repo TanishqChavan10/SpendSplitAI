@@ -1,7 +1,7 @@
 from ninja import NinjaAPI, Schema
 from typing import List, Optional
 from django.shortcuts import get_object_or_404
-from .models import Group, Expense, User, GroupMember, GroupLog
+from .models import Group, Expense, User, GroupMember, GroupLog, ExpenseSplit
 from django.db.models import Sum, Count
 from datetime import datetime
 from django.core.signing import TimestampSigner, SignatureExpired, BadSignature
@@ -22,6 +22,8 @@ class ExpenseSchema(Schema):
     category: str
     payer: UserSchema
     created_at: datetime
+    status: str
+    user_approval_status: Optional[str] = None
 
 class GroupLogSchema(Schema):
     id: int
@@ -47,19 +49,18 @@ class GroupSchema(Schema):
 
     @staticmethod
     def resolve_approvedTransactions(obj):
-        # Assuming all expenses are approved for now as there is no status field
-        return obj.expenses.count()
+        return obj.expenses.filter(status='APPROVED').count()
 
     @staticmethod
     def resolve_pendingTransactions(obj):
-        return 0
+        return obj.expenses.filter(status='PENDING').count()
 
     @staticmethod
     def resolve_netAmount(obj):
         # This is a simplified calculation. 
         # In a real app, this would depend on the user's perspective.
         # For now, returning total expense amount.
-        total = obj.expenses.aggregate(Sum('amount'))['amount__sum']
+        total = obj.expenses.filter(status='APPROVED').aggregate(Sum('amount'))['amount__sum']
         return float(total or 0.0)
 
     @staticmethod
@@ -197,12 +198,70 @@ def join_group(request, payload: JoinGroupSchema):
         print("DEBUG: Invalid token signature")
         return api.create_response(request, {'message': 'Invalid link'}, status=403)
 
+from .models import Group, Expense, User, GroupMember, GroupLog, ExpenseSplit
+
+class ExpenseSchema(Schema):
+    id: int
+    amount: float
+    description: str
+    category: str
+    payer: UserSchema
+    created_at: datetime
+    status: str
+    user_approval_status: Optional[str] = None
+
+class ExpenseResponseSchema(Schema):
+    action: str
+
 @api.get("/groups/{group_id}/expenses", response=List[ExpenseSchema])
 def list_group_expenses(request, group_id: int):
     user = request.user
     # Verify user is a member of this group
     group = get_object_or_404(Group, id=group_id, members=user)
-    return Expense.objects.filter(group=group).order_by('-created_at')
+    expenses = Expense.objects.filter(group=group).order_by('-created_at')
+    
+    for expense in expenses:
+        split = expense.splits.filter(user=user).first()
+        expense.user_approval_status = split.status if split else "NOT_INVOLVED"
+        
+    return expenses
+
+@api.post("/expenses/{expense_id}/respond")
+def respond_to_expense(request, expense_id: int, payload: ExpenseResponseSchema):
+    user = request.user
+    expense = get_object_or_404(Expense, id=expense_id)
+    
+    # Check if user is involved in this expense
+    try:
+        split = ExpenseSplit.objects.get(expense=expense, user=user)
+    except ExpenseSplit.DoesNotExist:
+        return api.create_response(request, {"error": "User not involved in this expense"}, status=400)
+    
+    if payload.action == "ACCEPT":
+        split.status = "ACCEPTED"
+    elif payload.action == "REJECT":
+        split.status = "REJECTED"
+        expense.status = "REJECTED"
+        expense.save()
+    else:
+        return api.create_response(request, {"error": "Invalid action"}, status=400)
+    
+    split.save()
+    
+    # Check if all splits are accepted
+    # If any split is REJECTED, expense is REJECTED (already handled above)
+    # If all splits are ACCEPTED, expense is APPROVED
+    if expense.status != "REJECTED":
+        # Check if there are any splits that are NOT ACCEPTED
+        # Note: Payer is usually implicitly accepted, but we should check if we create a split for payer?
+        # In create_expense_from_parsed_data, we create splits for everyone involved.
+        # If payer is in splits, they need to accept too? Or we auto-accept for payer?
+        # For now, let's assume everyone in splits must accept.
+        if not expense.splits.exclude(status="ACCEPTED").exists():
+            expense.status = "APPROVED"
+            expense.save()
+            
+    return {"success": True, "status": split.status, "expense_status": expense.status}
 
 @api.get("/groups/{group_id}/logs", response=List[GroupLogSchema])
 def list_group_logs(request, group_id: int):

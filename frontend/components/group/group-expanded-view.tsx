@@ -20,6 +20,7 @@ interface GroupExpandedViewProps {
   view?: "details" | "settings";
   animateInitial?: boolean;
   token?: string | null;
+  onExpenseUpdate?: () => void;
 }
 
 export function GroupExpandedView({
@@ -35,6 +36,7 @@ export function GroupExpandedView({
   view = "details",
   animateInitial = true,
   token = null,
+  onExpenseUpdate,
 }: GroupExpandedViewProps) {
   const id_unique = useId();
 
@@ -99,6 +101,7 @@ export function GroupExpandedView({
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 token={token}
+                onExpenseUpdate={onExpenseUpdate}
               />
             )}
           </motion.div>

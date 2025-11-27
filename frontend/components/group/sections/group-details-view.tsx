@@ -26,6 +26,7 @@ interface GroupDetailsViewProps {
   activeTab: "transactions" | "members";
   setActiveTab: (tab: "transactions" | "members") => void;
   token: string | null;
+  onExpenseUpdate?: () => void;
 }
 
 export function GroupDetailsView({
@@ -33,6 +34,7 @@ export function GroupDetailsView({
   activeTab,
   setActiveTab,
   token,
+  onExpenseUpdate,
 }: GroupDetailsViewProps) {
   const [expenses, setExpenses] = React.useState<any[]>([]);
   const [members, setMembers] = React.useState<any[]>([]);
@@ -123,8 +125,47 @@ export function GroupDetailsView({
       }
     } catch (e) {
       console.error(e);
-    } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRespond = async (expenseId: number, action: "ACCEPT" | "REJECT") => {
+    if (!token) return;
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/expenses/${expenseId}/respond`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action }),
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        // Update local state
+        setExpenses((prev) =>
+          prev.map((ex) => {
+            if (ex.id === expenseId) {
+              return {
+                ...ex,
+                user_approval_status: action === "ACCEPT" ? "ACCEPTED" : "REJECTED",
+                status: data.expense_status,
+              };
+            }
+            return ex;
+          })
+        );
+        if (onExpenseUpdate) {
+          onExpenseUpdate();
+        }
+      } else {
+        console.error("Failed to respond");
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -252,15 +293,58 @@ export function GroupDetailsView({
                   expenses.map((expense) => (
                     <div
                       key={expense.id}
-                      className="flex justify-between items-center"
+                      className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/50"
                     >
                       <div>
-                        <span className="font-medium text-sm">
-                          {expense.description}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">
+                            {expense.description}
+                          </span>
+                          {expense.status === "APPROVED" && (
+                            <span className="text-[10px] bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded-full font-medium">
+                              Approved
+                            </span>
+                          )}
+                          {expense.status === "REJECTED" && (
+                            <span className="text-[10px] bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded-full font-medium">
+                              Rejected
+                            </span>
+                          )}
+                          {expense.status === "PENDING" && (
+                            <span className="text-[10px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded-full font-medium">
+                              Pending
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           Paid by {expense.payer.name}
                         </p>
+                        {expense.user_approval_status === "PENDING" && expense.status !== "REJECTED" && (
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 text-xs border-green-500/20 hover:bg-green-500/10 hover:text-green-600 text-green-600"
+                              onClick={() => handleRespond(expense.id, "ACCEPT")}
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 text-xs border-red-500/20 hover:bg-red-500/10 hover:text-red-600 text-red-600"
+                              onClick={() => handleRespond(expense.id, "REJECT")}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                        {expense.user_approval_status === "ACCEPTED" && expense.status === "PENDING" && (
+                          <p className="text-[10px] text-green-600 mt-1">You accepted</p>
+                        )}
+                        {expense.user_approval_status === "REJECTED" && (
+                          <p className="text-[10px] text-red-600 mt-1">You rejected</p>
+                        )}
                       </div>
                       <p className="text-lg font-bold text-chart-2">
                         {formatIndianRupee(expense.amount)}

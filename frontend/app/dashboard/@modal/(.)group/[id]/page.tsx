@@ -145,6 +145,18 @@ export default function InterceptedGroupPage() {
       SUCCESS
   ------------------------------------------ */
 
+  /* -----------------------------------------
+      REFRESH
+  ------------------------------------------ */
+  const refreshGroup = async () => {
+    if (!id || !token) return;
+    // Don't set loading to true to avoid flicker
+    const { data } = await fetchGroup(id, token);
+    if (data) {
+      setGroup(data);
+    }
+  };
+
   return (
     <GroupExpandedView
       id={group.id.toString()}
@@ -157,6 +169,7 @@ export default function InterceptedGroupPage() {
       onClose={() => router.push("/dashboard")}
       animateInitial={false}
       token={token}
+      onExpenseUpdate={refreshGroup}
     />
   );
 }
