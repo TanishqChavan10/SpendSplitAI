@@ -7,13 +7,7 @@ import {
   SidebarLink,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  IconUsers,
-  IconInbox,
-  IconFileInvoice,
-  IconInfoCircle,
-  IconSettings,
-} from "@tabler/icons-react";
+import { IconUsers, IconInfoCircle } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import Image from "next/image";
@@ -29,24 +23,9 @@ export function AppSidebar() {
       icon: <IconUsers className="h-5 w-5" />,
     },
     {
-      label: "Inbox",
-      href: "/dashboard/inbox",
-      icon: <IconInbox className="h-5 w-5" />,
-    },
-    {
-      label: "Invoice",
-      href: "/dashboard/invoice",
-      icon: <IconFileInvoice className="h-5 w-5" />,
-    },
-    {
       label: "About",
       href: "/dashboard/about",
       icon: <IconInfoCircle className="h-5 w-5" />,
-    },
-    {
-      label: "Settings",
-      href: "/dashboard/settings",
-      icon: <IconSettings className="h-5 w-5" />,
     },
   ];
 

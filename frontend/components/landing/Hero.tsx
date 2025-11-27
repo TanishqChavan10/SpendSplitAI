@@ -2,7 +2,16 @@
 
 import React from "react";
 import { motion } from "motion/react";
-import { IconSparkles, IconUsers, IconChartBar } from "@tabler/icons-react";
+import {
+  IconSparkles,
+  IconUsers,
+  IconChartBar,
+  IconScissors,
+  IconRefresh,
+  IconScale,
+  IconBolt,
+  IconMessage,
+} from "@tabler/icons-react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
 import Image from "next/image";
 import Link from "next/link";
@@ -115,32 +124,32 @@ function FeaturesSection() {
     {
       title: "Clear Tracking",
       description: "Know exactly who paid for what, with transparent records",
-      icon: "📊",
+      icon: <IconChartBar className="w-8 h-8" />,
     },
     {
       title: "Auto Splitting",
       description: "Accurate cost division with smart algorithms",
-      icon: "✂️",
+      icon: <IconScissors className="w-8 h-8" />,
     },
     {
       title: "Debt Simplification",
       description: "Minimize transactions with automatic debt optimization",
-      icon: "🔄",
+      icon: <IconRefresh className="w-8 h-8" />,
     },
     {
       title: "Fairness AI",
       description: "AI suggestions to prevent spending imbalance",
-      icon: "⚖️",
+      icon: <IconScale className="w-8 h-8" />,
     },
     {
       title: "Real-time Sync",
       description: "All members see updates instantly",
-      icon: "⚡",
+      icon: <IconBolt className="w-8 h-8" />,
     },
     {
       title: "Natural Language",
       description: "Describe expenses naturally, AI understands",
-      icon: "💬",
+      icon: <IconMessage className="w-8 h-8" />,
     },
   ];
 
@@ -171,7 +180,7 @@ function FeaturesSection() {
             viewport={{ once: true }}
             className="p-6 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl hover:shadow-lg transition-shadow duration-200"
           >
-            <div className="text-4xl mb-4">{feature.icon}</div>
+            <div className="mb-4">{feature.icon}</div>
             <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
               {feature.title}
             </h3>

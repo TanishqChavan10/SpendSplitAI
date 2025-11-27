@@ -13,7 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -31,23 +37,23 @@ import {
 import { motion } from "motion/react";
 
 interface EmptyGroupsStateProps {
-  onCreate: (name: string, description: string) => Promise<void>;
+  onCreate: (name: string, duration: string) => Promise<void>;
 }
 
 export function EmptyGroupsState({ onCreate }: EmptyGroupsStateProps) {
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [joinViaLinkOpen, setJoinViaLinkOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
-  const [groupDescription, setGroupDescription] = useState("");
+  const [duration, setDuration] = useState("short-term");
   const [inviteLink, setInviteLink] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onCreate(groupName, groupDescription);
+    await onCreate(groupName, duration);
     setCreateGroupOpen(false);
     setGroupName("");
-    setGroupDescription("");
+    setDuration("short-term");
   };
 
   const handleJoinViaLink = (e: React.FormEvent) => {
@@ -135,16 +141,16 @@ export function EmptyGroupsState({ onCreate }: EmptyGroupsStateProps) {
                     />
                   </div>
                   <div className="space-y-4">
-                    <Label htmlFor="groupDescription">
-                      Description (Optional)
-                    </Label>
-                    <Textarea
-                      id="groupDescription"
-                      placeholder="Describe your group..."
-                      value={groupDescription}
-                      onChange={(e) => setGroupDescription(e.target.value)}
-                      rows={3}
-                    />
+                    <Label htmlFor="duration">Duration</Label>
+                    <Select value={duration} onValueChange={setDuration}>
+                      <SelectTrigger id="duration">
+                        <SelectValue placeholder="Select duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="short-term">Short Term</SelectItem>
+                        <SelectItem value="long-term">Long Term</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex justify-end gap-2 pt-4">
                     <Button
@@ -203,5 +209,4 @@ export function EmptyGroupsState({ onCreate }: EmptyGroupsStateProps) {
       </Empty>
     </motion.div>
   );
-
 }
