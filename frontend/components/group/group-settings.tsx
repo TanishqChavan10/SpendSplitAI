@@ -20,11 +20,17 @@ interface GroupSettingsProps {
   id?: string;
   name?: string;
   memberCount?: number;
+  onActionStart?: (action: "leave" | "delete") => void;
 }
 
 type SettingsTab = "general" | "invite" | "activity" | "export" | "danger";
 
-export function GroupSettings({ id, name, memberCount }: GroupSettingsProps) {
+export function GroupSettings({
+  id,
+  name,
+  memberCount,
+  onActionStart,
+}: GroupSettingsProps) {
   const { getToken } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
@@ -34,29 +40,44 @@ export function GroupSettings({ id, name, memberCount }: GroupSettingsProps) {
   );
 
   const handleConfirmAction = async () => {
-    if (confirmAction === "leave") {
-      if (id) {
-        try {
-          const token = await getToken();
-          await leaveGroup(parseInt(id), token);
-          window.location.assign("/dashboard");
-        } catch (error) {
-          console.error("Failed to leave group", error);
-        }
-      }
-    } else if (confirmAction === "delete") {
-      if (id) {
-        try {
-          const token = await getToken();
-          await deleteGroup(parseInt(id), token);
-          window.location.assign("/dashboard");
-        } catch (error) {
-          console.error("Failed to delete group", error);
-        }
-      }
-    }
+    if (!confirmAction || !id) return;
+
     setShowConfirmDialog(false);
+    const action = confirmAction;
     setConfirmAction(null);
+
+    // Close modal immediately
+    router.back();
+
+    // Small delay to let modal close, then perform action
+    setTimeout(async () => {
+      try {
+        const token = await getToken();
+
+        if (action === "leave") {
+          await leaveGroup(parseInt(id), token);
+          // Success - navigate with status
+          router.push(
+            "/dashboard?actionStatus=success&actionType=leave&actionMessage=Successfully+left+the+group!"
+          );
+        } else if (action === "delete") {
+          await deleteGroup(parseInt(id), token);
+          // Success - navigate with status
+          router.push(
+            "/dashboard?actionStatus=success&actionType=delete&actionMessage=Successfully+deleted+the+group!"
+          );
+        }
+      } catch (error: any) {
+        console.error(`Failed to ${action} group`, error);
+        const errorMessage =
+          error.message || `Failed to ${action} group. Please try again.`;
+        router.push(
+          `/dashboard?actionStatus=error&actionType=${action}&actionMessage=${encodeURIComponent(
+            errorMessage
+          )}`
+        );
+      }
+    }, 300);
   };
 
   const openConfirmDialog = (action: "leave" | "delete") => {

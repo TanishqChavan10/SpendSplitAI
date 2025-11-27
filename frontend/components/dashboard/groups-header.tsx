@@ -19,14 +19,14 @@ export function GroupsHeader({
   return (
     <div className="flex items-center justify-between">
       <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
-        Your Groups
+        Groups
       </h2>
       <div className="flex items-center gap-4">
         <div className="text-sm text-neutral-600 dark:text-neutral-400">
           {loading ? <Skeleton className="h-4 w-16" /> : `${groupCount} groups`}
         </div>
         <Button onClick={onCreateClick}>
-          <IconPlus className="w-4 h-4 mr-2" />
+          <IconPlus className="w-4 h-4" />
           New
         </Button>
       </div>

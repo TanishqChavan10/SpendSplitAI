@@ -43,13 +43,15 @@ async function safeJson<T>(response: Response): Promise<T> {
  */
 async function apiClient<T>(
   url: string,
-  options: RequestInit,
+  options: RequestInit
 ): Promise<{ data: T | null; error: string | null; status: number }> {
   try {
     const response = await fetch(url, options);
 
     const status = response.status;
-    const isJson = response.headers.get("content-type")?.includes("application/json");
+    const isJson = response.headers
+      .get("content-type")
+      ?.includes("application/json");
 
     if (!response.ok) {
       const errorBody = isJson ? await safeJson<any>(response) : null;
@@ -96,7 +98,16 @@ export async function fetchGroups(token: string | null) {
   });
 }
 
-export async function createGroup(groupData: GroupCreate, token: string | null) {
+export async function fetchGroupsCount(token: string | null) {
+  return apiClient<{ count: number }>(`${API_URL}/groups/count`, {
+    headers: await authHeaders(token),
+  });
+}
+
+export async function createGroup(
+  groupData: GroupCreate,
+  token: string | null
+) {
   return apiClient<Group>(`${API_URL}/groups`, {
     method: "POST",
     headers: await authHeaders(token),
@@ -152,7 +163,10 @@ export interface GroupLog {
   created_at: string;
 }
 
-export async function fetchGroupExpenses(id: number, token: string | null): Promise<Expense[]> {
+export async function fetchGroupExpenses(
+  id: number,
+  token: string | null
+): Promise<Expense[]> {
   const response = await fetch(`${API_URL}/groups/${id}/expenses`, {
     headers: await authHeaders(token),
   });
@@ -162,7 +176,10 @@ export async function fetchGroupExpenses(id: number, token: string | null): Prom
   return response.json();
 }
 
-export async function fetchGroupLogs(id: number, token: string | null): Promise<GroupLog[]> {
+export async function fetchGroupLogs(
+  id: number,
+  token: string | null
+): Promise<GroupLog[]> {
   const response = await fetch(`${API_URL}/groups/${id}/logs`, {
     headers: await authHeaders(token),
   });
@@ -172,7 +189,10 @@ export async function fetchGroupLogs(id: number, token: string | null): Promise<
   return response.json();
 }
 
-export async function deleteGroup(id: number, token: string | null): Promise<void> {
+export async function deleteGroup(
+  id: number,
+  token: string | null
+): Promise<void> {
   const response = await fetch(`${API_URL}/groups/${id}`, {
     method: "DELETE",
     headers: await authHeaders(token),
@@ -182,7 +202,10 @@ export async function deleteGroup(id: number, token: string | null): Promise<voi
   }
 }
 
-export async function leaveGroup(id: number, token: string | null): Promise<void> {
+export async function leaveGroup(
+  id: number,
+  token: string | null
+): Promise<void> {
   const response = await fetch(`${API_URL}/groups/${id}/leave`, {
     method: "POST",
     headers: await authHeaders(token),
@@ -192,7 +215,10 @@ export async function leaveGroup(id: number, token: string | null): Promise<void
   }
 }
 
-export async function generateInviteLink(id: number, token: string | null): Promise<string> {
+export async function generateInviteLink(
+  id: number,
+  token: string | null
+): Promise<string> {
   const response = await fetch(`${API_URL}/groups/${id}/invite`, {
     method: "POST",
     headers: await authHeaders(token),
@@ -200,13 +226,18 @@ export async function generateInviteLink(id: number, token: string | null): Prom
   if (!response.ok) {
     const text = await response.text();
     console.error(`Generate invite failed: ${response.status} ${text}`);
-    throw new Error(`Failed to generate invite link: ${response.status} ${text}`);
+    throw new Error(
+      `Failed to generate invite link: ${response.status} ${text}`
+    );
   }
   const data = await response.json();
   return data.invite_url;
 }
 
-export async function joinGroup(inviteToken: string, token: string | null): Promise<Group> {
+export async function joinGroup(
+  inviteToken: string,
+  token: string | null
+): Promise<Group> {
   const response = await fetch(`${API_URL}/groups/join/`, {
     method: "POST",
     headers: await authHeaders(token),
@@ -243,7 +274,9 @@ export async function uploadReceipt(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || errorData.error || "Failed to upload receipt");
+    throw new Error(
+      errorData.message || errorData.error || "Failed to upload receipt"
+    );
   }
 
   return response.json();

@@ -149,7 +149,7 @@ function NotificationPopover() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="relative rounded-full">
+        <Button variant="ghost" size="icon" className="relative rounded-full">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
             <Badge
@@ -205,8 +205,9 @@ function NotificationPopover() {
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`p-4 hover:bg-muted/50 transition-colors ${!alert.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
-                    }`}
+                  className={`p-4 hover:bg-muted/50 transition-colors ${
+                    !alert.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">

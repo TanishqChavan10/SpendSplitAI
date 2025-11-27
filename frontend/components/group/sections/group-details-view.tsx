@@ -89,6 +89,8 @@ export function GroupDetailsView({
       .then((res) => res.json())
       .then((data) => {
         if (data.member_details) {
+          console.log("Member details:", data.member_details);
+          console.log("Owner ID:", ownerId);
           setMembers(data.member_details);
         }
       })
@@ -100,10 +102,14 @@ export function GroupDetailsView({
     if ((!promptValue.trim() && !selectedFile) || !token) return;
     setIsLoading(true);
     try {
-
       let newExpense;
       if (selectedFile) {
-        newExpense = await uploadReceipt(parseInt(id), selectedFile, promptValue, token);
+        newExpense = await uploadReceipt(
+          parseInt(id),
+          selectedFile,
+          promptValue,
+          token
+        );
       } else {
         const res = await fetch(
           `http://127.0.0.1:8000/api/groups/${id}/expenses/ai`,
@@ -152,7 +158,10 @@ export function GroupDetailsView({
     }
   };
 
-  const handleRespond = async (expenseId: number, action: "ACCEPT" | "REJECT") => {
+  const handleRespond = async (
+    expenseId: number,
+    action: "ACCEPT" | "REJECT"
+  ) => {
     if (!token) return;
     try {
       const res = await fetch(
@@ -174,7 +183,8 @@ export function GroupDetailsView({
             if (ex.id === expenseId) {
               return {
                 ...ex,
-                user_approval_status: action === "ACCEPT" ? "ACCEPTED" : "REJECTED",
+                user_approval_status:
+                  action === "ACCEPT" ? "ACCEPTED" : "REJECTED",
                 status: data.expense_status,
               };
             }
@@ -266,8 +276,9 @@ export function GroupDetailsView({
                     </div>
                   </div>
                   <span
-                    className={`text-lg font-bold ${member.balance >= 0 ? "text-chart-2" : "text-destructive"
-                      }`}
+                    className={`text-lg font-bold ${
+                      member.balance >= 0 ? "text-chart-2" : "text-destructive"
+                    }`}
                   >
                     {member.balance >= 0 ? "+" : "-"}
                     {formatIndianRupee(Math.abs(member.balance))}
@@ -324,12 +335,16 @@ export function GroupDetailsView({
                   className="rounded-full"
                   onClick={() =>
                     startListening((spokenText: any) => {
-                      setPromptValue((prev: any) => (prev ? prev + " " + spokenText : spokenText));
+                      setPromptValue((prev: any) =>
+                        prev ? prev + " " + spokenText : spokenText
+                      );
                     })
                   }
                 >
                   <IconMicrophone
-                    className={`w-4 h-4 ${isListening ? "animate-pulse text-red-500" : ""}`}
+                    className={`w-4 h-4 ${
+                      isListening ? "animate-pulse text-red-500" : ""
+                    }`}
                   />
                 </Button>
               </PromptInputAction>
@@ -337,7 +352,9 @@ export function GroupDetailsView({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className={`rounded-full ${selectedFile ? "text-primary bg-primary/10" : ""}`}
+                  className={`rounded-full ${
+                    selectedFile ? "text-primary bg-primary/10" : ""
+                  }`}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <IconCamera className="w-4 h-4" />
@@ -422,31 +439,41 @@ export function GroupDetailsView({
                         <p className="text-xs text-muted-foreground">
                           Paid by {expense.payer.name}
                         </p>
-                        {expense.user_approval_status === "PENDING" && expense.status !== "REJECTED" && (
-                          <div className="flex gap-2 mt-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-6 text-xs border-green-500/20 hover:bg-green-500/10 hover:text-green-600 text-green-600"
-                              onClick={() => handleRespond(expense.id, "ACCEPT")}
-                            >
-                              Accept
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-6 text-xs border-red-500/20 hover:bg-red-500/10 hover:text-red-600 text-red-600"
-                              onClick={() => handleRespond(expense.id, "REJECT")}
-                            >
-                              Reject
-                            </Button>
-                          </div>
-                        )}
-                        {expense.user_approval_status === "ACCEPTED" && expense.status === "PENDING" && (
-                          <p className="text-[10px] text-green-600 mt-1">You accepted</p>
-                        )}
+                        {expense.user_approval_status === "PENDING" &&
+                          expense.status !== "REJECTED" && (
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-xs border-green-500/20 hover:bg-green-500/10 hover:text-green-600 text-green-600"
+                                onClick={() =>
+                                  handleRespond(expense.id, "ACCEPT")
+                                }
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-xs border-red-500/20 hover:bg-red-500/10 hover:text-red-600 text-red-600"
+                                onClick={() =>
+                                  handleRespond(expense.id, "REJECT")
+                                }
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+                        {expense.user_approval_status === "ACCEPTED" &&
+                          expense.status === "PENDING" && (
+                            <p className="text-[10px] text-green-600 mt-1">
+                              You accepted
+                            </p>
+                          )}
                         {expense.user_approval_status === "REJECTED" && (
-                          <p className="text-[10px] text-red-600 mt-1">You rejected</p>
+                          <p className="text-[10px] text-red-600 mt-1">
+                            You rejected
+                          </p>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
@@ -482,11 +509,13 @@ export function GroupDetailsView({
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm">{member.name}</p>
-                          {ownerId && member.id === ownerId && (
-                            <Badge variant="secondary" className="text-xs">
-                              Owner
-                            </Badge>
-                          )}
+                          {ownerId &&
+                            member.id &&
+                            Number(member.id) === Number(ownerId) && (
+                              <Badge variant="secondary" className="text-xs">
+                                Owner
+                              </Badge>
+                            )}
                         </div>
                         <p className="text-xs text-muted-foreground">Member</p>
                       </div>
@@ -505,16 +534,14 @@ export function GroupDetailsView({
           </Button>
         </div>
       </div>
-      {
-        selectedUser && (
-          <PerUserData
-            isOpen={!!selectedUser}
-            onClose={() => setSelectedUser(null)}
-            userName={selectedUser}
-            expenses={expenses}
-          />
-        )
-      }
-    </div >
+      {selectedUser && (
+        <PerUserData
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+          userName={selectedUser}
+          expenses={expenses}
+        />
+      )}
+    </div>
   );
 }

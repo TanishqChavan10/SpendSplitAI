@@ -1,7 +1,13 @@
 django
-django-ninja
 django-cors-headers
+django-ninja
+clerk-backend-api
+google-generativeai
 python-dotenv
 psycopg2-binary
-google-generativeai
+PyJWT
+Pillow
 requests
+
+
+

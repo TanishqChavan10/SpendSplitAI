@@ -10,7 +10,6 @@ import {
 } from "@tabler/icons-react";
 import { formatLastActivity, formatIndianRupee } from "@/lib/utils";
 import { motion } from "motion/react";
-import Link from "next/link";
 
 interface GroupCardProps {
   id: string;
@@ -21,6 +20,7 @@ interface GroupCardProps {
   netAmount: number;
   memberCount: number;
   lastActivity: string;
+  onClick?: () => void;
 }
 
 export function GroupCard({
@@ -32,11 +32,12 @@ export function GroupCard({
   netAmount,
   memberCount,
   lastActivity,
+  onClick,
 }: GroupCardProps) {
   const id_unique = useId();
 
   return (
-    <Link href={`/dashboard/group/${id}`} className="block w-full">
+    <div onClick={onClick} className="block w-full cursor-pointer">
       <motion.div layoutId={`card-${name}-${id_unique}`} className="w-full">
         <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer border-l-4 border-l-primary">
           <CardHeader className="pb-3">
@@ -92,6 +93,6 @@ export function GroupCard({
           </CardContent>
         </Card>
       </motion.div>
-    </Link>
+    </div>
   );
 }

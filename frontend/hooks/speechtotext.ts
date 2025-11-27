@@ -1,8 +1,14 @@
 import React from "react";
 
+type SpeechRecognitionType = {
+  onFinal?: (text: string) => void;
+  start: () => void;
+  stop: () => void;
+};
+
 export function useSpeechToText() {
   const [isListening, setIsListening] = React.useState(false);
-  const recognitionRef = React.useRef<any>(null);
+  const recognitionRef = React.useRef<SpeechRecognitionType | null>(null);
 
   React.useEffect(() => {
     const SpeechRecognition =
@@ -21,16 +27,23 @@ export function useSpeechToText() {
 
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
-      recognitionRef.current?.onFinal(transcript);
+      recognitionRef.current?.onFinal?.(transcript);
     };
 
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => {
+      setIsListening(false);
+    };
 
     recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop?.();
+    };
   }, []);
 
   const startListening = (onFinal: (text: string) => void) => {
-    if (!recognitionRef.current) return;
+    if (!recognitionRef.current || isListening) return;
+
     recognitionRef.current.onFinal = onFinal;
     setIsListening(true);
     recognitionRef.current.start();

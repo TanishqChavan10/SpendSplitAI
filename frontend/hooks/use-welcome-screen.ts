@@ -38,11 +38,14 @@ export function useWelcomeScreen({
       setIsFirstTime(!!isNewUser);
       setShowWelcome(true);
       localStorage.setItem("lastWelcomeDate", today);
-    } else if (lastWelcomeDate !== today) {
-      // Show welcome once per day for returning users
-      setIsFirstTime(false);
-      setShowWelcome(true);
-      localStorage.setItem("lastWelcomeDate", today);
+    } else {
+      // For returning users, show welcome once per login session
+      const welcomeShownThisSession = sessionStorage.getItem("welcomeShownThisSession");
+      if (!welcomeShownThisSession) {
+        setIsFirstTime(false);
+        setShowWelcome(true);
+        sessionStorage.setItem("welcomeShownThisSession", "true");
+      }
     }
   }, [isLoaded, user]);
 

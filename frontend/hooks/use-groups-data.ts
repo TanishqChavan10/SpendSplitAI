@@ -15,8 +15,11 @@ export function useGroupsData() {
     (async () => {
       try {
         setLoading(true);
+        setError(null);
 
         const token = await getToken();
+
+        // Fetch groups
         const { data, error, status } = await fetchGroups(token);
 
         if (status === 401) {

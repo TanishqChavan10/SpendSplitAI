@@ -13,6 +13,7 @@ import {
   IconMessage,
 } from "@tabler/icons-react";
 import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-with-collision";
+import { EncryptedText } from "@/components/ui/encrypted-text";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -31,14 +32,14 @@ export function Hero() {
             <div className="h-12 w-12 relative rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
               <Image
                 src="/logo.png"
-                alt="SplitSphere Logo"
+                alt="SpendSplit Logo"
                 fill
                 className="object-contain scale-110 dark:brightness-75"
                 priority
               />
             </div>
             <span className="text-xl font-bold text-neutral-900 dark:text-white">
-              SplitSphere
+              SpendSplit
             </span>
           </div>
         </motion.div>
@@ -51,13 +52,21 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="space-y-4"
           >
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              Who Owes What?
+            <div className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
+              <EncryptedText
+                text="Who Owes What?"
+                revealedClassName="text-neutral-900 dark:text-white"
+                revealDelayMs={100}
+                flipDelayMs={100}
+              />
               <br />
-              <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                We Know.
-              </span>
-            </h1>
+              <EncryptedText
+                text="We Know."
+                revealedClassName="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                revealDelayMs={100}
+                flipDelayMs={100}
+              />
+            </div>
             <p className="text-lg sm:text-xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
               Eliminate confusion and disputes. Automatically track, split, and
               simplify shared expenses for groups with AI-powered intelligence.
@@ -163,7 +172,7 @@ function FeaturesSection() {
     >
       <div className="text-center space-y-4 mb-12">
         <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white">
-          Why Choose SplitSphere?
+          Why Choose SpendSplit?
         </h2>
         <p className="text-neutral-600 dark:text-neutral-400">
           Making shared expenses simple, fair, and transparent
