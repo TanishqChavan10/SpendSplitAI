@@ -23,6 +23,7 @@ class ExpenseSchema(Schema):
     payer: UserSchema
     created_at: datetime
     status: str
+    dispute_reason: Optional[str] = None
     user_approval_status: Optional[str] = None
 
 class GroupLogSchema(Schema):
@@ -209,6 +210,7 @@ class ExpenseSchema(Schema):
     payer: UserSchema
     created_at: datetime
     status: str
+    dispute_reason: Optional[str] = None
     user_approval_status: Optional[str] = None
 
 class ExpenseResponseSchema(Schema):
@@ -258,6 +260,31 @@ def respond_to_expense(request, expense_id: int, payload: ExpenseResponseSchema)
             expense.save()
             
     return {"success": True, "status": split.status, "expense_status": expense.status}
+
+class DisputeSchema(Schema):
+    reason: str
+
+@api.post("/expenses/{expense_id}/dispute")
+def dispute_expense(request, expense_id: int, payload: DisputeSchema):
+    user = request.user
+    expense = get_object_or_404(Expense, id=expense_id)
+    
+    # Check if user is involved
+    try:
+        split = ExpenseSplit.objects.get(expense=expense, user=user)
+    except ExpenseSplit.DoesNotExist:
+        return api.create_response(request, {"error": "User not involved in this expense"}, status=400)
+        
+    # Update split status
+    split.status = "DISPUTED"
+    split.save()
+    
+    # Update expense status and reason
+    expense.status = "DISPUTED"
+    expense.dispute_reason = payload.reason
+    expense.save()
+    
+    return {"success": True, "status": "DISPUTED"}
 
 @api.delete("/expenses/{expense_id}")
 def delete_expense(request, expense_id: int):

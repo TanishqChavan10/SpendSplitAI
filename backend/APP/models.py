@@ -77,6 +77,7 @@ class Expense(models.Model):
         ('PENDING', 'Pending'),
         ('APPROVED', 'Approved'),
         ('REJECTED', 'Rejected'),
+        ('DISPUTED', 'Disputed'),
     ]
 
     id = models.AutoField(primary_key=True)
@@ -86,6 +87,7 @@ class Expense(models.Model):
     description = models.CharField(max_length=255)
     category = models.CharField(max_length=50)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    dispute_reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -97,6 +99,7 @@ class ExpenseSplit(models.Model):
         ('PENDING', 'Pending'),
         ('ACCEPTED', 'Accepted'),
         ('REJECTED', 'Rejected'),
+        ('DISPUTED', 'Disputed'),
     ]
 
     id = models.AutoField(primary_key=True)
