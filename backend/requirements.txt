@@ -6,3 +6,8 @@ google-generativeai
 python-dotenv
 psycopg2-binary
 PyJWT
+Pillow
+requests
+
+
+
