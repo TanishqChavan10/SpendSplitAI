@@ -22,20 +22,12 @@ class DisputeSystemTest(TestCase):
             amount=100.00,
             description="Dinner",
             category="Food",
-            status="PENDING"
+            status="APPROVED"
         )
         ExpenseSplit.objects.create(expense=expense, user=self.user1, owed_amount=50.00, status="ACCEPTED")
-        split2 = ExpenseSplit.objects.create(expense=expense, user=self.user2, owed_amount=50.00, status="PENDING")
+        split2 = ExpenseSplit.objects.create(expense=expense, user=self.user2, owed_amount=50.00, status="ACCEPTED")
 
-        # 2. Verify Initial Financials (Should be 0 as status is PENDING)
-        financials = get_monthly_financials(self.group.id)
-        self.assertEqual(financials['total_spend'], 0)
-
-        # Approve expense manually for testing service logic
-        expense.status = "APPROVED"
-        expense.save()
-        
-        # Verify Financials (User 1 paid 100, consumed 50 -> +50)
+        # 2. Verify Initial Financials (Should be calculated immediately)
         financials = get_monthly_financials(self.group.id)
         self.assertEqual(financials['total_spend'], 100.0)
         self.assertEqual(financials['balances'][self.user1], 50.0)

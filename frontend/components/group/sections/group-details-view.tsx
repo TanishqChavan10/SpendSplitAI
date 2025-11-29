@@ -501,49 +501,29 @@ export function GroupDetailsView({
                         <p className="text-xs text-muted-foreground">
                           Paid by {expense.payer.name}
                         </p>
-                        {expense.user_approval_status === "PENDING" &&
-                          expense.status !== "REJECTED" && (
+                        {expense.user_approval_status !== "REJECTED" &&
+                          expense.status !== "REJECTED" &&
+                          expense.status !== "DISPUTED" && (
                             <div className="flex gap-2 mt-2">
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="h-6 text-xs border-green-500/20 hover:bg-green-500/10 hover:text-green-600 text-green-600"
-                                onClick={() =>
-                                  handleRespond(expense.id, "ACCEPT")
-                                }
-                              >
-                                Accept
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
                                 className="h-6 text-xs border-red-500/20 hover:bg-red-500/10 hover:text-red-600 text-red-600"
-                                onClick={() =>
-                                  handleRespond(expense.id, "REJECT")
-                                }
+                                onClick={() => handleRespond(expense.id, "REJECT")}
                               >
                                 Reject
                               </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 text-xs text-muted-foreground hover:text-orange-500 px-0"
+                                onClick={() => handleDispute(expense.id)}
+                              >
+                                Dispute
+                              </Button>
                             </div>
                           )}
-                        {expense.user_approval_status !== "DISPUTED" &&
-                          expense.status !== "DISPUTED" &&
-                          expense.status !== "REJECTED" && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 text-xs text-muted-foreground hover:text-orange-500 mt-2 px-0"
-                              onClick={() => handleDispute(expense.id)}
-                            >
-                              Dispute
-                            </Button>
-                          )}
-                        {expense.user_approval_status === "ACCEPTED" &&
-                          expense.status === "PENDING" && (
-                            <p className="text-[10px] text-green-600 mt-1">
-                              You accepted
-                            </p>
-                          )}
+
                         {expense.user_approval_status === "REJECTED" && (
                           <p className="text-[10px] text-red-600 mt-1">
                             You rejected

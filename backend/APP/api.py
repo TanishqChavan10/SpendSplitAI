@@ -43,6 +43,14 @@ class GroupSchema(Schema):
     netAmount: float = 0.0
     memberCount: int = 0
     lastActivity: Optional[str] = None
+    is_owner: bool = False
+
+    @staticmethod
+    def resolve_is_owner(obj, context):
+        request = context.get('request')
+        if request and request.user:
+            return obj.owner == request.user
+        return False
 
     @staticmethod
     def resolve_totalTransactions(obj):
@@ -240,9 +248,7 @@ def respond_to_expense(request, expense_id: int, payload: ExpenseResponseSchema)
     except ExpenseSplit.DoesNotExist:
         return api.create_response(request, {"error": "User not involved in this expense"}, status=400)
     
-    if payload.action == "ACCEPT":
-        split.status = "ACCEPTED"
-    elif payload.action == "REJECT":
+    if payload.action == "REJECT":
         split.status = "REJECTED"
         expense.status = "REJECTED"
         expense.save()
@@ -250,14 +256,6 @@ def respond_to_expense(request, expense_id: int, payload: ExpenseResponseSchema)
         return api.create_response(request, {"error": "Invalid action"}, status=400)
     
     split.save()
-    
-    # Check if all splits are accepted
-    # If any split is REJECTED, expense is REJECTED (already handled above)
-    # If all splits are ACCEPTED, expense is APPROVED
-    if expense.status != "REJECTED":
-        if not expense.splits.exclude(status="ACCEPTED").exists():
-            expense.status = "APPROVED"
-            expense.save()
             
     return {"success": True, "status": split.status, "expense_status": expense.status}
 

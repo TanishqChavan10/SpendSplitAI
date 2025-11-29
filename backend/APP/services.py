@@ -215,8 +215,8 @@ def create_expense_from_parsed_data(group_id, parsed_data):
         payer=payer,
         amount=parsed_data['amount'],
         description=parsed_data['description'],
-        category="General",
-        status='APPROVED' if members.count() == 1 else 'PENDING'
+        category=parsed_data['category'],
+        status='APPROVED'
     )
 
     splits_data = parsed_data.get('splits', [])
@@ -239,7 +239,7 @@ def create_expense_from_parsed_data(group_id, parsed_data):
                 expense=expense,
                 user=user,
                 owed_amount=split['amount'],
-                status='ACCEPTED' if user == payer else 'PENDING'
+                status='ACCEPTED'
             )
     
     return expense

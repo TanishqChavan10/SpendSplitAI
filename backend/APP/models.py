@@ -86,7 +86,7 @@ class Expense(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.CharField(max_length=255)
     category = models.CharField(max_length=50)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='APPROVED')
     dispute_reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -106,7 +106,7 @@ class ExpenseSplit(models.Model):
     expense = models.ForeignKey(Expense, on_delete=models.CASCADE, related_name='splits')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owed_splits')
     owed_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ACCEPTED')
 
     def __str__(self):
         return f"{self.user} owes {self.owed_amount} ({self.status})"
