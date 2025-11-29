@@ -289,9 +289,9 @@ def delete_expense(request, expense_id: int):
     user = request.user
     expense = get_object_or_404(Expense, id=expense_id)
     
-    # Check if user is a member of the group
-    if not expense.group.members.filter(id=user.id).exists():
-        return api.create_response(request, {"error": "Not authorized"}, status=403)
+    # Check if user is the payer
+    if expense.payer != user:
+        return api.create_response(request, {"error": "Only the payer can delete this expense"}, status=403)
         
     expense.delete()
     return {"success": True}

@@ -80,12 +80,21 @@ class Expense(models.Model):
         ('DISPUTED', 'Disputed'),
     ]
 
+    CATEGORIES = [
+        ('FOOD', 'Food'),
+        ('TRANSPORTATION', 'Transportation'),
+        ('ENTERTAINMENT', 'Entertainment'),
+        ('MISCELLANEOUS', 'Miscellaneous'),
+        ('SUPPLIES', 'Supplies'),
+        ('BILLS', 'Bills')
+    ]
+
     id = models.AutoField(primary_key=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='expenses')
     payer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expenses_paid')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.CharField(max_length=255)
-    category = models.CharField(max_length=50)
+    category = models.CharField(max_length=50, choices=CATEGORIES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='APPROVED')
     dispute_reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

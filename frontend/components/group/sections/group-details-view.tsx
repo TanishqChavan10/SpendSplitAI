@@ -165,49 +165,7 @@ export function GroupDetailsView({
     }
   };
 
-  const handleRespond = async (
-    expenseId: number,
-    action: "ACCEPT" | "REJECT"
-  ) => {
-    if (!token) return;
-    try {
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/expenses/${expenseId}/respond`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ action }),
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        // Update local state
-        setExpenses((prev) =>
-          prev.map((ex) => {
-            if (ex.id === expenseId) {
-              return {
-                ...ex,
-                user_approval_status:
-                  action === "ACCEPT" ? "ACCEPTED" : "REJECTED",
-                status: data.expense_status,
-              };
-            }
-            return ex;
-          })
-        );
-        if (onExpenseUpdate) {
-          onExpenseUpdate();
-        }
-      } else {
-        console.error("Failed to respond");
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+
 
   const handleDispute = async (expenseId: number) => {
     if (!token) return;
@@ -505,14 +463,7 @@ export function GroupDetailsView({
                           expense.status !== "REJECTED" &&
                           expense.status !== "DISPUTED" && (
                             <div className="flex gap-2 mt-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-6 text-xs border-red-500/20 hover:bg-red-500/10 hover:text-red-600 text-red-600"
-                                onClick={() => handleRespond(expense.id, "REJECT")}
-                              >
-                                Reject
-                              </Button>
+
                               <Button
                                 size="sm"
                                 variant="ghost"
