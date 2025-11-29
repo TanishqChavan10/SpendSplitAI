@@ -1,4 +1,4 @@
-git mvenv
+venv
 PROJ/prod-ca-2021.crt
 .env
 .idea
