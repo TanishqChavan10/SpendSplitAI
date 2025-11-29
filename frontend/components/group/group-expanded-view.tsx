@@ -12,6 +12,7 @@ interface GroupExpandedViewProps {
   name: string;
   memberCount: number;
   lastActivity: string;
+  minFloor?: number;
   active: boolean;
   activeTab: "transactions" | "members";
   setActiveTab: (tab: "transactions" | "members") => void;
@@ -30,6 +31,7 @@ export function GroupExpandedView({
   name,
   memberCount,
   lastActivity,
+  minFloor,
   active,
   activeTab,
   setActiveTab,
@@ -102,6 +104,7 @@ export function GroupExpandedView({
                 id={id}
                 name={name}
                 memberCount={memberCount}
+                minFloor={minFloor}
                 isOwner={isOwner}
               />
             ) : (

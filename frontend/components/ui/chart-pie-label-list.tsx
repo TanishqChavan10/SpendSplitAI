@@ -22,15 +22,16 @@ import {
 export const description = "A pie chart with a label list";
 
 interface Expense {
-  id: string;
+  id: number;
   amount: number;
   description: string;
   category: string;
   payer: {
     name: string;
-    id: string;
+    id: number;
   };
   created_at: string;
+  status: string;
 }
 
 interface ChartPieLabelListProps {
@@ -53,16 +54,18 @@ export function ChartPieLabelList({ expenses }: ChartPieLabelListProps) {
       return { chartData: [], chartConfig: {}, totalAmount: 0 };
     }
 
-    // Group by category
+    // Group by category (only APPROVED expenses)
     const categoryTotals: Record<string, number> = {};
     let total = 0;
 
-    expenses.forEach((expense) => {
-      const category = expense.category.toLowerCase();
-      categoryTotals[category] =
-        (categoryTotals[category] || 0) + expense.amount;
-      total += expense.amount;
-    });
+    expenses
+      .filter((expense) => expense.status === "APPROVED") // Only approved expenses
+      .forEach((expense) => {
+        const category = expense.category.toLowerCase();
+        categoryTotals[category] =
+          (categoryTotals[category] || 0) + expense.amount;
+        total += expense.amount;
+      });
 
     // Create chart data
     const data = Object.entries(categoryTotals).map(([category, amount]) => ({

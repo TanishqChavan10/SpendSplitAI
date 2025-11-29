@@ -2,6 +2,7 @@ export interface Group {
   id: number;
   name: string;
   type: string;
+  min_floor: number;
   totalTransactions: number;
   approvedTransactions: number;
   pendingTransactions: number;
@@ -15,6 +16,7 @@ export interface Group {
 export interface GroupCreate {
   name: string;
   type: string;
+  min_floor?: number;
 }
 
 const API_URL = "http://localhost:8000/api";

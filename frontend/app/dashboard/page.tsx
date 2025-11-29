@@ -158,16 +158,16 @@ function DashboardContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {loading
                 ? Array.from({ length: 4 }).map((_, index) => (
-                  <CardSkeleton key={`skeleton-${index}`} />
-                ))
+                    <CardSkeleton key={`skeleton-${index}`} />
+                  ))
                 : filteredGroups.map((group) => (
-                  <GroupCard
-                    key={group.id}
-                    {...group}
-                    id={group.id.toString()}
-                    onClick={() => setSelectedGroupId(group.id.toString())}
-                  />
-                ))}
+                    <GroupCard
+                      key={group.id}
+                      {...group}
+                      id={group.id.toString()}
+                      onClick={() => setSelectedGroupId(group.id.toString())}
+                    />
+                  ))}
             </div>
           </div>
         )}
@@ -187,13 +187,17 @@ function DashboardContent() {
             groups.find((g) => g.id.toString() === selectedGroupId)
               ?.lastActivity || ""
           }
+          minFloor={
+            groups.find((g) => g.id.toString() === selectedGroupId)
+              ?.min_floor || 2000
+          }
           active={true}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onClose={() => setSelectedGroupId(null)}
           animateInitial={true}
           token={token}
-          onExpenseUpdate={() => { }}
+          onExpenseUpdate={() => {}}
           ownerId={
             groups.find((g) => g.id.toString() === selectedGroupId)?.owner_id ||
             null

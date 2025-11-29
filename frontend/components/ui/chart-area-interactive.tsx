@@ -29,15 +29,16 @@ import {
 export const description = "An interactive area chart";
 
 interface Expense {
-  id: string;
+  id: number;
   amount: number;
   description: string;
   category: string;
   payer: {
     name: string;
-    id: string;
+    id: number;
   };
   created_at: string;
+  status: string;
 }
 
 interface ChartAreaInteractiveProps {
@@ -62,21 +63,20 @@ export function ChartAreaInteractive({ expenses }: ChartAreaInteractiveProps) {
   const chartData = React.useMemo(() => {
     if (!expenses || expenses.length === 0) return [];
 
-    // Group expenses by date
+    // Group expenses by date (only APPROVED expenses)
     const dataByDate: Record<string, { received: number; spend: number }> = {};
 
-    expenses.forEach((expense) => {
-      const date = new Date(expense.created_at).toISOString().split("T")[0];
-      if (!dataByDate[date]) {
-        dataByDate[date] = { received: 0, spend: 0 };
-      }
+    expenses
+      .filter((expense) => expense.status === "APPROVED") // Only approved expenses
+      .forEach((expense) => {
+        const date = new Date(expense.created_at).toISOString().split("T")[0];
+        if (!dataByDate[date]) {
+          dataByDate[date] = { received: 0, spend: 0 };
+        }
 
-      // Assuming positive amounts are "received" and we track all as spend
-      // You may need to adjust this logic based on your business rules
-      if (expense.amount > 0) {
+        // Add to spend (expenses are always spending)
         dataByDate[date].spend += expense.amount;
-      }
-    });
+      });
 
     // Convert to array and sort by date
     return Object.entries(dataByDate)

@@ -20,6 +20,7 @@ interface GroupSettingsProps {
   id?: string;
   name?: string;
   memberCount?: number;
+  minFloor?: number;
   onActionStart?: (action: "leave" | "delete") => void;
   isOwner?: boolean;
 }
@@ -30,6 +31,7 @@ export function GroupSettings({
   id,
   name,
   memberCount,
+  minFloor,
   onActionStart,
   isOwner,
 }: GroupSettingsProps) {
@@ -90,7 +92,7 @@ export function GroupSettings({
   const renderTabContent = () => {
     switch (activeTab) {
       case "general":
-        return <GeneralSettings id={id} name={name} />;
+        return <GeneralSettings id={id} name={name} minFloor={minFloor} />;
       case "invite":
         return <InviteSettings id={id} />;
       case "activity":
@@ -106,7 +108,7 @@ export function GroupSettings({
           />
         );
       default:
-        return <GeneralSettings id={id} name={name} />;
+        return <GeneralSettings id={id} name={name} minFloor={minFloor} />;
     }
   };
 

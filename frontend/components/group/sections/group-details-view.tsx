@@ -8,7 +8,6 @@ import {
   IconPlus,
   IconSend,
   IconSettings,
-  IconMicrophone,
   IconCamera,
   IconX,
   IconTrash,
@@ -31,7 +30,6 @@ import { formatIndianRupee } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PerUserData } from "../per-user-data";
 import { Badge } from "@/components/ui/badge";
-import { useSpeechToText } from "@/hooks/speechtotext";
 import { uploadReceipt, deleteExpense } from "@/lib/api";
 
 interface GroupDetailsViewProps {
@@ -57,7 +55,6 @@ export function GroupDetailsView({
   const [isLoading, setIsLoading] = React.useState(false);
   const [membersLoading, setMembersLoading] = React.useState(true);
   const [expensesLoading, setExpensesLoading] = React.useState(true);
-  const { isListening, startListening } = useSpeechToText();
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -326,8 +323,9 @@ export function GroupDetailsView({
                     </div>
                   </div>
                   <span
-                    className={`text-lg font-bold ${member.balance >= 0 ? "text-chart-2" : "text-destructive"
-                      }`}
+                    className={`text-lg font-bold ${
+                      member.balance >= 0 ? "text-chart-2" : "text-destructive"
+                    }`}
                   >
                     {member.balance >= 0 ? "+" : "-"}
                     {formatIndianRupee(Math.abs(member.balance))}
@@ -377,31 +375,13 @@ export function GroupDetailsView({
           >
             <PromptInputTextarea placeholder="Log a new transaction..." />
             <PromptInputActions>
-              <PromptInputAction tooltip="Voice input">
-                <Button
-                  size="sm"
-                  variant={isListening ? "default" : "ghost"}
-                  className="rounded-full"
-                  onClick={() =>
-                    startListening((spokenText: any) => {
-                      setPromptValue((prev: any) =>
-                        prev ? prev + " " + spokenText : spokenText
-                      );
-                    })
-                  }
-                >
-                  <IconMicrophone
-                    className={`w-4 h-4 ${isListening ? "animate-pulse text-red-500" : ""
-                      }`}
-                  />
-                </Button>
-              </PromptInputAction>
               <PromptInputAction tooltip="Scan Receipt">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className={`rounded-full ${selectedFile ? "text-primary bg-primary/10" : ""
-                    }`}
+                  className={`rounded-full ${
+                    selectedFile ? "text-primary bg-primary/10" : ""
+                  }`}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <IconCamera className="w-4 h-4" />
@@ -509,7 +489,9 @@ export function GroupDetailsView({
                                 size="sm"
                                 variant="outline"
                                 className="h-6 text-xs border-red-500/20 hover:bg-red-500/10 hover:text-red-600 text-red-600"
-                                onClick={() => handleRespond(expense.id, "REJECT")}
+                                onClick={() =>
+                                  handleRespond(expense.id, "REJECT")
+                                }
                               >
                                 Reject
                               </Button>
@@ -588,16 +570,14 @@ export function GroupDetailsView({
           </Button>
         </div>
       </div>
-      {
-        selectedUser && (
-          <PerUserData
-            isOpen={!!selectedUser}
-            onClose={() => setSelectedUser(null)}
-            userName={selectedUser}
-            expenses={expenses}
-          />
-        )
-      }
-    </div >
+      {selectedUser && (
+        <PerUserData
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+          userName={selectedUser}
+          expenses={expenses}
+        />
+      )}
+    </div>
   );
 }

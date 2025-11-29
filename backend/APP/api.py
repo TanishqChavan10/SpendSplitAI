@@ -37,6 +37,7 @@ class GroupSchema(Schema):
     name: str
     type: str
     owner_id: Optional[int] = None
+    min_floor: float = 2000.00
     totalTransactions: int = 0
     approvedTransactions: int = 0
     pendingTransactions: int = 0
@@ -93,6 +94,7 @@ class GroupCreateSchema(Schema):
 class GroupUpdateSchema(Schema):
     name: Optional[str] = None
     type: Optional[str] = None
+    min_floor: Optional[float] = None
 
 @api.get("/groups", response=List[GroupSchema])
 def list_groups(request):
