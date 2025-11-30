@@ -1,14 +1,5 @@
-"use client";
-
-import React from "react";
-import { useRouter } from "next/navigation";
+import Dashboard from "../../page";
 
 export default function GroupPage() {
-  const router = useRouter();
-
-  React.useEffect(() => {
-    router.push("/dashboard");
-  }, [router]);
-
-  return null;
+    return <Dashboard />;
 }

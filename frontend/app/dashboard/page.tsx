@@ -11,17 +11,20 @@ import { GroupsHeader } from "@/components/dashboard/groups-header";
 import { CreateGroupDialog } from "@/components/dashboard/create-group-dialog";
 import { GroupActionStatus } from "@/components/group/group-action-status";
 import { GroupExpandedView } from "@/components/group/group-expanded-view";
-import { useGroupsData } from "@/hooks/use-groups-data";
 import { useCreateGroup } from "@/hooks/use-create-group";
 import { useWelcomeScreen } from "@/hooks/use-welcome-screen";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
+import { useGroupsContext } from "@/components/dashboard/groups-provider";
+import { Group } from "@/lib/api";
+import Link from "next/link";
 
 function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { getToken } = useAuth();
-  const { groups, setGroups, loading, error, isLoaded, user } = useGroupsData();
+  const { groups, setGroups, loading, error, isLoaded, user, refreshGroups } =
+    useGroupsContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { showWelcome, isFirstTime, setShowWelcome } = useWelcomeScreen({
@@ -34,17 +37,17 @@ function DashboardContent() {
     message: string;
   } | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"transactions" | "members">(
     "transactions"
   );
-  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     getToken().then(setToken);
   }, [getToken]);
 
   const { createNewGroup } = useCreateGroup((newGroup) => {
-    setGroups((prevGroups) => [...prevGroups, newGroup]);
+    setGroups((prevGroups: Group[]) => [...prevGroups, newGroup]);
   });
 
   useEffect(() => {
@@ -125,7 +128,7 @@ function DashboardContent() {
     }
   };
 
-  const filteredGroups = groups.filter((group) =>
+  const filteredGroups = groups.filter((group: Group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -161,12 +164,17 @@ function DashboardContent() {
                     <CardSkeleton key={`skeleton-${index}`} />
                   ))
                 : filteredGroups.map((group) => (
-                    <GroupCard
+                    <Link
                       key={group.id}
-                      {...group}
-                      id={group.id.toString()}
-                      onClick={() => setSelectedGroupId(group.id.toString())}
-                    />
+                      href={`/dashboard/group/${group.id}`}
+                      className="block"
+                    >
+                      <GroupCard
+                        {...group}
+                        id={group.id.toString()}
+                        onClick={() => {}}
+                      />
+                    </Link>
                   ))}
             </div>
           </div>
@@ -187,6 +195,10 @@ function DashboardContent() {
             groups.find((g) => g.id.toString() === selectedGroupId)
               ?.lastActivity || ""
           }
+          minFloor={
+            groups.find((g) => g.id.toString() === selectedGroupId)
+              ?.min_floor || 2000
+          }
           active={true}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -198,6 +210,10 @@ function DashboardContent() {
             groups.find((g) => g.id.toString() === selectedGroupId)?.owner_id ||
             null
           }
+          isOwner={
+            groups.find((g) => g.id.toString() === selectedGroupId)?.is_owner
+          }
+          refreshData={refreshGroups}
         />
       )}
 

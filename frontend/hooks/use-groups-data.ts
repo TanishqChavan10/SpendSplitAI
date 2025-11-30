@@ -9,35 +9,38 @@ export function useGroupsData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const refreshGroups = async () => {
+    if (!authLoaded || !userLoaded) return;
+    try {
+      const token = await getToken();
+      const { data, error, status } = await fetchGroups(token);
+
+      if (status === 401) {
+        setError("Unauthorized");
+        setGroups([]);
+        return;
+      }
+
+      if (error) {
+        setError(error);
+        setGroups([]);
+        return;
+      }
+
+      setGroups(data || []);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load groups");
+    }
+  };
+
   useEffect(() => {
     if (!authLoaded || !userLoaded) return;
 
     (async () => {
       try {
         setLoading(true);
-        setError(null);
-
-        const token = await getToken();
-
-        // Fetch groups
-        const { data, error, status } = await fetchGroups(token);
-
-        if (status === 401) {
-          setError("Unauthorized");
-          setGroups([]);
-          return;
-        }
-
-        if (error) {
-          setError(error);
-          setGroups([]);
-          return;
-        }
-
-        setGroups(data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load groups");
+        await refreshGroups();
       } finally {
         setLoading(false);
       }
@@ -51,5 +54,6 @@ export function useGroupsData() {
     error,
     isLoaded: authLoaded && userLoaded,
     user,
+    refreshGroups,
   };
 }
