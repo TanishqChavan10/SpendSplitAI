@@ -1,9 +1,5 @@
-import Image from "next/image";
+import Dashboard from "../../../page";
 
-export default function GroupSettings() {
-  return (
-    <div>
-      <h1>Group Settings</h1>
-    </div>
-  );
+export default function GroupSettingsPage() {
+    return <Dashboard />;
 }

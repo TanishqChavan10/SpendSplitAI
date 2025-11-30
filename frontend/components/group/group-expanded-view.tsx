@@ -24,6 +24,7 @@ interface GroupExpandedViewProps {
   onExpenseUpdate?: () => void;
   ownerId?: number | null;
   isOwner?: boolean;
+  refreshData?: () => void;
 }
 
 export function GroupExpandedView({
@@ -43,6 +44,7 @@ export function GroupExpandedView({
   onExpenseUpdate,
   ownerId,
   isOwner,
+  refreshData,
 }: GroupExpandedViewProps) {
   const id_unique = useId();
 
@@ -115,6 +117,7 @@ export function GroupExpandedView({
                 token={token}
                 onExpenseUpdate={onExpenseUpdate}
                 ownerId={ownerId}
+                refreshData={refreshData}
               />
             )}
           </motion.div>

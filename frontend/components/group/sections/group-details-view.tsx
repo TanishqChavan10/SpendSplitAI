@@ -12,6 +12,7 @@ import {
   IconX,
   IconTrash,
   IconAlertCircle,
+  IconLoader2,
 } from "@tabler/icons-react";
 import {
   Tooltip,
@@ -39,6 +40,7 @@ interface GroupDetailsViewProps {
   token: string | null;
   onExpenseUpdate?: () => void;
   ownerId?: number | null;
+  refreshData?: () => void;
 }
 
 export function GroupDetailsView({
@@ -48,6 +50,7 @@ export function GroupDetailsView({
   token,
   onExpenseUpdate,
   ownerId,
+  refreshData,
 }: GroupDetailsViewProps) {
   const [expenses, setExpenses] = React.useState<any[]>([]);
   const [members, setMembers] = React.useState<any[]>([]);
@@ -102,6 +105,45 @@ export function GroupDetailsView({
       .finally(() => setMembersLoading(false));
   }, [id, token]);
 
+  const refreshDetails = async () => {
+    if (!token) return;
+    try {
+      // Fetch expenses silently
+      const expensesRes = await fetch(
+        `http://127.0.0.1:8000/api/groups/${id}/expenses`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (expensesRes.ok) {
+        const data = await expensesRes.json();
+        if (Array.isArray(data)) {
+          setExpenses(data);
+        }
+      }
+
+      // Fetch members silently
+      const analysisRes = await fetch(
+        `http://127.0.0.1:8000/api/groups/${id}/analysis`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (analysisRes.ok) {
+        const data = await analysisRes.json();
+        if (data.member_details) {
+          setMembers(data.member_details);
+        }
+      }
+
+      if (refreshData) {
+        refreshData();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleSend = async () => {
     if ((!promptValue.trim() && !selectedFile) || !token) return;
     setIsLoading(true);
@@ -137,27 +179,16 @@ export function GroupDetailsView({
       }
 
       if (newExpense) {
-        setExpenses((prev) => [newExpense, ...prev]);
         setPromptValue("");
         setSelectedFile(null);
-
-        // Refresh analysis to update balances
-        fetch(`http://127.0.0.1:8000/api/groups/${id}/analysis`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.member_details) {
-              setMembers(data.member_details);
-            }
-          });
+        await refreshDetails();
+        if (onExpenseUpdate) onExpenseUpdate();
       } else {
         console.error("Failed to create expense");
       }
     } catch (e) {
       console.error(e);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -211,24 +242,8 @@ export function GroupDetailsView({
     if (!token) return;
     try {
       await deleteExpense(expenseId, token);
-      setExpenses((prev) => prev.filter((ex) => ex.id !== expenseId));
-
-      // Refresh analysis
-      fetch(`http://127.0.0.1:8000/api/groups/${id}/analysis`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.member_details) {
-            setMembers(data.member_details);
-          }
-        });
-
-      if (onExpenseUpdate) {
-        onExpenseUpdate();
-      }
+      await refreshDetails();
+      if (onExpenseUpdate) onExpenseUpdate();
     } catch (e) {
       console.error(e);
     }
@@ -281,9 +296,8 @@ export function GroupDetailsView({
                     </div>
                   </div>
                   <span
-                    className={`text-lg font-bold ${
-                      member.balance >= 0 ? "text-chart-2" : "text-destructive"
-                    }`}
+                    className={`text-lg font-bold ${member.balance >= 0 ? "text-chart-2" : "text-destructive"
+                      }`}
                   >
                     {member.balance >= 0 ? "+" : "-"}
                     {formatIndianRupee(Math.abs(member.balance))}
@@ -337,9 +351,8 @@ export function GroupDetailsView({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className={`rounded-full ${
-                    selectedFile ? "text-primary bg-primary/10" : ""
-                  }`}
+                  className={`rounded-full ${selectedFile ? "text-primary bg-primary/10" : ""
+                    }`}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <IconCamera className="w-4 h-4" />
@@ -347,7 +360,11 @@ export function GroupDetailsView({
               </PromptInputAction>
               <PromptInputAction tooltip="Send">
                 <Button size="sm" onClick={handleSend} className="rounded-full">
-                  <IconSend className="w-4 h-4" />
+                  {isLoading ? (
+                    <IconLoader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <IconSend className="w-4 h-4" />
+                  )}
                 </Button>
               </PromptInputAction>
             </PromptInputActions>

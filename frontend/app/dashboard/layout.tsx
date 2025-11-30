@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { GroupsProvider } from "@/components/dashboard/groups-provider";
 
 export default function DashboardLayout({
   children,
@@ -8,12 +9,14 @@ export default function DashboardLayout({
   modal: React.ReactNode;
 }) {
   return (
-    <div className="h-screen w-full">
-      <AppSidebar />
-      <div className="flex flex-col overflow-hidden">
-        {children}
-        {modal}
+    <GroupsProvider>
+      <div className="h-screen w-full">
+        <AppSidebar />
+        <div className="flex flex-col overflow-hidden">
+          {children}
+          {modal}
+        </div>
       </div>
-    </div>
+    </GroupsProvider>
   );
 }
