@@ -86,23 +86,23 @@ WSGI_APPLICATION = 'PROJ.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 pw = os.getenv("PASSWORD")
 host = os.getenv("HOST")
-user =  os.getenv("USER")
+user = os.getenv("USER")
+port = os.getenv("PORT", "5432")
+db_name = os.getenv("DB_NAME", "postgres")
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': db_name,
         'USER': user,
         'PASSWORD': pw,
         'HOST': host,
-        'PORT': '5432',
-        'CERT' : 'PROJ.prod-ca-2021.crt'
+        'PORT': port,
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 DATABASE_ROUTERS = ['PROJ.routers.CustomRouter']
