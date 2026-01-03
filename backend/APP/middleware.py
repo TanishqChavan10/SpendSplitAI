@@ -1,5 +1,5 @@
 import jwt
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from clerk_backend_api import Clerk
 from .models import User
@@ -10,6 +10,11 @@ class ClerkAuthenticationMiddleware:
         self.clerk = Clerk(bearer_auth=settings.CLERK_SECRET_KEY)
 
     def __call__(self, request):
+
+        # Allow CORS preflight through without auth.
+        # Browsers do not include Authorization on OPTIONS requests.
+        if request.method == "OPTIONS":
+            return HttpResponse(status=200)
 
         # Skip admin & static routes
         if request.path.startswith(("/admin", "/static", "/media")):
