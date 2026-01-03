@@ -5,11 +5,11 @@ Django settings for PROJ project.
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from corsheaders.defaults import default_headers
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # -------------------------------------------------------------------
 # Helpers
@@ -29,10 +29,9 @@ def _env_csv(name: str, default: list[str] | None = None) -> list[str]:
 
 
 # -------------------------------------------------------------------
-# Core security settings
+# Core security
 # -------------------------------------------------------------------
 SECRET_KEY = os.getenv("SECRET_KEY")
-
 DEBUG = _env_bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = _env_csv(
@@ -41,19 +40,17 @@ ALLOWED_HOSTS = _env_csv(
 )
 
 # -------------------------------------------------------------------
-# HTTPS / Security (Render + Vercel safe)
+# HTTPS / Proxy (Render-safe)
 # -------------------------------------------------------------------
-SECURE_SSL_REDIRECT = _env_bool("SECURE_SSL_REDIRECT")
-
-# REQUIRED when behind Render / reverse proxy
+SECURE_SSL_REDIRECT = _env_bool("SECURE_SSL_REDIRECT", default=True)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS")
 SECURE_HSTS_PRELOAD = _env_bool("SECURE_HSTS_PRELOAD")
 
-SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE")
-CSRF_COOKIE_SECURE = _env_bool("CSRF_COOKIE_SECURE")
+SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE", default=True)
+CSRF_COOKIE_SECURE = _env_bool("CSRF_COOKIE_SECURE", default=True)
 
 # -------------------------------------------------------------------
 # Applications
@@ -69,20 +66,28 @@ INSTALLED_APPS = [
     "APP",
 ]
 
+# -------------------------------------------------------------------
+# Middleware (ORDER IS CRITICAL)
+# -------------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+
+    # 👇 MUST be before CommonMiddleware
     "corsheaders.middleware.CorsMiddleware",
+
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
+    # Custom auth
     "APP.middleware.ClerkAuthenticationMiddleware",
 ]
 
 # -------------------------------------------------------------------
-# CORS / CSRF
+# CORS / CSRF (FINAL FIX)
 # -------------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = _env_csv(
     "CORS_ALLOWED_ORIGINS",
@@ -93,6 +98,12 @@ CSRF_TRUSTED_ORIGINS = _env_csv(
     "CSRF_TRUSTED_ORIGINS",
     default=[],
 )
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "authorization",
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # -------------------------------------------------------------------
 # URLs / WSGI
@@ -112,7 +123,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
             ],
         },
-    },
+    }
 ]
 
 WSGI_APPLICATION = "PROJ.wsgi.application"
@@ -170,7 +181,6 @@ USE_TZ = True
 # Static files
 # -------------------------------------------------------------------
 STATIC_URL = "static/"
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # -------------------------------------------------------------------
@@ -180,7 +190,7 @@ CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # -------------------------------------------------------------------
-# Cache (Phase 4 – backend safety net)
+# Cache (backend safety net)
 # -------------------------------------------------------------------
 CACHES = {
     "default": {
