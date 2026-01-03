@@ -13,6 +13,7 @@ import {
 import DashHeader from "@/components/dashboard/dash-header";
 import { useAuth } from "@clerk/nextjs";
 import { fetchGroupExpenses } from "@/lib/api";
+import { getClerkJwt } from "@/lib/clerk-jwt";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGroupsContext } from "@/components/dashboard/groups-provider";
 
@@ -27,8 +28,7 @@ export default function AnalysisPage() {
     async function loadData() {
       try {
         if (!isLoaded) return;
-        const token = await getToken();
-        if (!token) return;
+        const token = await getClerkJwt(getToken);
 
         // Use cached groups (single source of truth).
         if (!groups || groups.length === 0) {

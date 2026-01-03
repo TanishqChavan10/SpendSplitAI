@@ -22,6 +22,7 @@ import {
   GroupLog,
   generateInviteLink,
 } from "@/lib/api";
+import { getClerkJwt } from "@/lib/clerk-jwt";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@clerk/nextjs";
 
@@ -47,7 +48,7 @@ export function GeneralSettings({
     setLoading(true);
     setSuccess(false);
     try {
-      const token = await getToken();
+      const token = await getClerkJwt(getToken);
       await updateGroup(parseInt(id), { name, min_floor: minFloor }, token);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
@@ -119,7 +120,7 @@ export function InviteSettings({ id }: InviteSettingsProps) {
     if (!id) return;
     setLoading(true);
     try {
-      const token = await getToken();
+      const token = await getClerkJwt(getToken);
       const link = await generateInviteLink(parseInt(id), token);
       setInviteLink(link);
     } catch (error) {
@@ -194,13 +195,12 @@ export function ActivitySettings({ id }: ActivitySettingsProps) {
 
   useEffect(() => {
     if (!id) return;
-    getToken().then((token) => {
-      fetchGroupLogs(parseInt(id), token)
-        .then(setLogs)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    });
-  }, [id]);
+    getClerkJwt(getToken)
+      .then((token) => fetchGroupLogs(parseInt(id), token))
+      .then(setLogs)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id, getToken]);
 
   return (
     <div className="space-y-6">
@@ -254,7 +254,7 @@ export function ExportSettings({ id }: ExportSettingsProps) {
   const handleExportCSV = async () => {
     if (!id) return;
     try {
-      const token = await getToken();
+      const token = await getClerkJwt(getToken);
       const expenses = await fetchGroupExpenses(parseInt(id), token);
       const csvContent =
         "Date,Description,Amount,Payer,Category\n" +

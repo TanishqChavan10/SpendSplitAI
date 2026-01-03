@@ -17,6 +17,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useGroupsContext } from "@/components/dashboard/groups-provider";
 import { Group } from "@/lib/api";
+import { getClerkJwt } from "@/lib/clerk-jwt";
 import Link from "next/link";
 
 function DashboardContent() {
@@ -43,7 +44,12 @@ function DashboardContent() {
   );
 
   useEffect(() => {
-    getToken().then(setToken);
+    getClerkJwt(getToken)
+      .then(setToken)
+      .catch((e) => {
+        console.error(e);
+        setToken(null);
+      });
   }, [getToken]);
 
   const { createNewGroup } = useCreateGroup((newGroup) => {

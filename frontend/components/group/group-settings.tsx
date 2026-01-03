@@ -13,6 +13,7 @@ import { DangerZone } from "./sections/danger-zone";
 import { ConfirmationDialog } from "./sections/confirmation-dialog";
 
 import { deleteGroup, leaveGroup } from "@/lib/api";
+import { getClerkJwt } from "@/lib/clerk-jwt";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 
@@ -56,7 +57,7 @@ export function GroupSettings({
     // Small delay to let modal close, then perform action
     setTimeout(async () => {
       try {
-        const token = await getToken();
+        const token = await getClerkJwt(getToken);
 
         if (action === "leave") {
           await leaveGroup(parseInt(id), token);

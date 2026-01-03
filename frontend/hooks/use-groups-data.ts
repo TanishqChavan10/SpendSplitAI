@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { fetchGroups, Group } from "@/lib/api";
+import { getClerkJwt } from "@/lib/clerk-jwt";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useGroupsData() {
@@ -17,7 +18,7 @@ export function useGroupsData() {
     queryKey,
     enabled: isReady && !!userId,
     queryFn: async (): Promise<Group[]> => {
-      const token = await getToken();
+      const token = await getClerkJwt(getToken);
       const { data, error, status } = await fetchGroups(token);
 
       if (status === 401) throw new Error("Unauthorized");

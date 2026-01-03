@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { createGroup, Group } from "@/lib/api";
+import { getClerkJwt } from "@/lib/clerk-jwt";
 
 export function useCreateGroup(onSuccess: (group: Group) => void) {
   const { getToken } = useAuth();
@@ -17,7 +18,7 @@ export function useCreateGroup(onSuccess: (group: Group) => void) {
 
     try {
       setCreating(true);
-      const token = await getToken();
+      const token = await getClerkJwt(getToken);
       const { data: newGroup, error } = await createGroup(
         {
           name,

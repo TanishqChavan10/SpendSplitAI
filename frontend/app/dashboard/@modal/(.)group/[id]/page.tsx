@@ -6,6 +6,7 @@ import { GroupExpandedView } from "@/components/group/group-expanded-view";
 import { Group } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@clerk/nextjs";
+import { getClerkJwt } from "@/lib/clerk-jwt";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useGroupsContext } from "@/components/dashboard/groups-provider";
 
@@ -47,7 +48,12 @@ export default function InterceptedGroupPage() {
   const groupFromContext = groups.find((g) => g.id === id);
 
   useEffect(() => {
-    getToken().then(setToken);
+    getClerkJwt(getToken)
+      .then(setToken)
+      .catch((e) => {
+        console.error(e);
+        setToken(null);
+      });
   }, [getToken]);
 
   /* -----------------------------------------
