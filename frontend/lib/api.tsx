@@ -19,9 +19,14 @@ export interface GroupCreate {
   min_floor?: number;
 }
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:8000/api";
+const apiUrlFromEnv = process.env.NEXT_PUBLIC_API_URL;
+if (!apiUrlFromEnv) {
+  throw new Error(
+    "NEXT_PUBLIC_API_URL is not defined. Set it (e.g. https://spendsplit-backend.onrender.com/api)"
+  );
+}
+
+export const API_URL = apiUrlFromEnv.replace(/\/$/, "");
 
 // ⛔ DO NOT REDIRECT INSIDE FETCH
 // ⛔ DO NOT USE window.location HERE
