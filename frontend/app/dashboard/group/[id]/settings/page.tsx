@@ -23,9 +23,7 @@ export default function GroupSettingsPage() {
       id={group.id.toString()}
       name={group.name}
       minFloor={group.min_floor}
-      active={true}
-      onClose={() => router.push("/dashboard")}
-      ownerId={group.owner_id}
+      memberCount={group.memberCount}
       isOwner={group.is_owner}
     />
   );
