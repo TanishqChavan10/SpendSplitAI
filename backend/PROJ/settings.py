@@ -4,10 +4,12 @@ Django settings for PROJ project.
 
 from pathlib import Path
 import os
+from urllib.parse import parse_qs, unquote, urlparse
 from dotenv import load_dotenv
 from corsheaders.defaults import default_headers
 
-load_dotenv()
+# Ensure local .env values win over inherited shell environment values.
+load_dotenv(override=True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -131,13 +133,37 @@ WSGI_APPLICATION = "PROJ.wsgi.application"
 # -------------------------------------------------------------------
 # Database
 # -------------------------------------------------------------------
-DB_HOST = os.getenv("HOST")
-DB_USER = os.getenv("USER")
-DB_PASSWORD = os.getenv("PASSWORD")
-DB_PORT = os.getenv("PORT", "5432")
+DATABASE_URL = os.getenv("DATABASE_URL")
+DB_HOST = os.getenv("DB_HOST") or os.getenv("HOST")
+DB_USER = os.getenv("DB_USER") or os.getenv("USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD") or os.getenv("PASSWORD")
+DB_PORT = os.getenv("DB_PORT") or os.getenv("PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "postgres")
 
-if DB_HOST and DB_USER and DB_PASSWORD:
+if DATABASE_URL:
+    parsed = urlparse(DATABASE_URL)
+    if parsed.scheme in {"postgres", "postgresql"}:
+        query = parse_qs(parsed.query)
+        sslmode = query.get("sslmode", ["require"])[0]
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": (parsed.path or "/postgres").lstrip("/"),
+                "USER": unquote(parsed.username or ""),
+                "PASSWORD": unquote(parsed.password or ""),
+                "HOST": parsed.hostname or "",
+                "PORT": str(parsed.port or "5432"),
+                "OPTIONS": {"sslmode": sslmode},
+            }
+        }
+    else:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
+elif DB_HOST and DB_USER and DB_PASSWORD:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
